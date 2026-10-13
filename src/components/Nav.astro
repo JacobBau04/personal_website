@@ -1,9 +1,10 @@
 ---
 import NavLink from './NavLink.astro';
-import ThemeToggle from './ThemeToggle.astro';
 import siteConfig from '../data/site-config';
 
 const navLinks = siteConfig.headerNavLinks ?? [];
+// Links to files (e.g. /resume.pdf) open in a new tab instead of going through the page router
+const isFileLink = (href: string) => /\.[a-z0-9]+$/i.test(href);
 ---
 
 <nav class="relative min-h-10 pt-4 pb-12 sm:min-h-14 sm:pb-24 md:pt-8" aria-label="Primary navigation">
@@ -23,7 +24,11 @@ const navLinks = siteConfig.headerNavLinks ?? [];
             >
                 {navLinks.map((link) => (
                     <li class="py-1">
-                        <NavLink class="text-main font-serif text-xl hover:underline hover:decoration-1 hover:underline-offset-2 md:text-base" href={link.href}>
+                        <NavLink
+                            class="text-main font-serif text-xl hover:underline hover:decoration-1 hover:underline-offset-2 md:text-base"
+                            href={link.href}
+                            {...(isFileLink(link.href) ? { target: '_blank', rel: 'noopener' } : {})}
+                        >
                             {link.text}
                         </NavLink>
                     </li>
@@ -31,9 +36,6 @@ const navLinks = siteConfig.headerNavLinks ?? [];
             </ul>
         </div>
     )}
-    <div class="absolute top-4 right-0 z-10 md:top-8">
-        <ThemeToggle />
-    </div>
 </nav>
 
 <style>
