@@ -1,0 +1,25 @@
+---
+import CustomImage from './CustomImage.astro';
+
+type Props = {
+    /** Path inside src/assets/projects/, e.g. "my-project/robot.jpg" */
+    src: string;
+    alt?: string;
+    caption?: string;
+};
+
+const { src, alt, caption } = Astro.props;
+
+// Images live in src/assets/projects/ so Astro can resize and compress them at build time
+const images = import.meta.glob<{ default: ImageMetadata }>('/src/assets/projects/**/*.{jpg,jpeg,png,webp,avif,gif}');
+const loadImage = images[`/src/assets/projects/${src}`];
+if (!loadImage) {
+    throw new Error(`Figure: no image found at src/assets/projects/${src}`);
+}
+const image = (await loadImage()).default;
+---
+
+<figure>
+    <CustomImage class="w-full" src={image} alt={alt ?? caption ?? ''} widths={[480, 768, 1024, 1536]} sizes="(min-width: 832px) 768px, calc(100vw - 32px)" />
+    {caption && <figcaption>{caption}</figcaption>}
+</figure>

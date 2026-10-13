@@ -1,0 +1,16 @@
+---
+type Props = {
+    /** URL of an MP4 in public/, e.g. "/videos/my-project/demo.mp4" */
+    src: string;
+    caption?: string;
+    /** Optional still image shown before the video plays, e.g. "/videos/my-project/demo.jpg" */
+    poster?: string;
+};
+
+const { src, caption, poster } = Astro.props;
+---
+
+<figure>
+    <video class="w-full" src={src} poster={poster} controls playsinline preload="metadata"></video>
+    {caption && <figcaption>{caption}</figcaption>}
+</figure>

@@ -1,53 +1,72 @@
 ---
 import { type CollectionEntry, getCollection, render } from 'astro:content';
-import ProjectPreview from '../../components/ProjectPreview.astro';
+import ArrowLeft from '../../assets/icons/arrow-left.svg';
+import ArrowRight from '../../assets/icons/arrow-right.svg';
+import Figure from '../../components/Figure.astro';
+import Video from '../../components/Video.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { sortItemsByDateDesc } from '../../utils/data-utils';
+import { sortProjects } from '../../utils/data-utils';
 
 export async function getStaticPaths() {
-    const projects = (await getCollection('projects')).sort(sortItemsByDateDesc);
-    const projectCount = projects.length;
+    // Same order as the Projects page, so previous/next follow the list
+    const projects = (await getCollection('projects')).sort(sortProjects);
     return projects.map((project, index) => ({
         params: { id: project.id },
         props: {
             project,
-            prevProject: index + 1 !== projectCount ? projects[index + 1] : null,
-            nextProject: index !== 0 ? projects[index - 1] : null
+            prevProject: projects[index - 1] ?? null,
+            nextProject: projects[index + 1] ?? null
         }
     }));
 }
 
 type Props = {
     project: CollectionEntry<'projects'>;
-    prevProject: CollectionEntry<'projects'>;
-    nextProject: CollectionEntry<'projects'>;
+    prevProject: CollectionEntry<'projects'> | null;
+    nextProject: CollectionEntry<'projects'> | null;
 };
 
 const { project, prevProject, nextProject } = Astro.props;
-const { title, description, seo } = project.data;
+const { title, description, image, seo } = project.data;
 const { Content } = await render(project);
+const navTitleClass = 'font-serif text-xl leading-tight font-medium group-hover:underline group-hover:decoration-dashed group-hover:decoration-1 group-hover:underline-offset-4';
 ---
 
 <BaseLayout
     title={seo?.title ?? title}
     description={seo?.description ?? description}
-    image={seo?.image}
+    image={seo?.image ?? image}
     pageType={seo?.pageType ?? 'article'}
     showHeader={false}
 >
     <article class="mb-16 sm:mb-24">
         <header class="mb-8">
             <h1 class="font-serif text-3xl leading-tight font-medium sm:text-5xl sm:leading-tight">{title}</h1>
+            {description && <p class="mt-4 text-lg leading-normal sm:text-xl">{description}</p>}
         </header>
         <div class="prose sm:prose-lg max-w-none">
-            <Content />
+            {/* Figure and Video can be used in any .mdx project file without importing them */}
+            <Content components={{ Figure, Video }} />
         </div>
     </article>
     {(prevProject || nextProject) && (
-        <div class="my-16 sm:my-24">
-            <h2 class="mb-12 font-serif text-xl italic sm:mb-16 sm:text-2xl">View Next</h2>
-            {nextProject && <ProjectPreview project={nextProject} class="mb-10 sm:mb-12" headingLevel="h3" />}
-            {prevProject && <ProjectPreview project={prevProject} class="mb-10 sm:mb-12" headingLevel="h3" />}
-        </div>
+        <nav class="border-main my-16 grid gap-8 border-t border-dashed pt-8 sm:my-24 sm:grid-cols-2" aria-label="More projects">
+            {prevProject && (
+                <a class="group" href={`/projects/${prevProject.id}/`}>
+                    <span class="mb-1 flex items-center gap-1 font-serif text-sm italic">
+                        <ArrowLeft class="h-4 w-4 fill-current" /> Previous project
+                    </span>
+                    <span class={navTitleClass}>{prevProject.data.title}</span>
+                </a>
+            )}
+            {nextProject && (
+                <a class="group sm:col-start-2 sm:text-right" href={`/projects/${nextProject.id}/`}>
+                    <span class="mb-1 flex items-center gap-1 font-serif text-sm italic sm:justify-end">
+                        Next project <ArrowRight class="h-4 w-4 fill-current" />
+                    </span>
+                    <span class={navTitleClass}>{nextProject.data.title}</span>
+                </a>
+            )}
+        </nav>
     )}
 </BaseLayout>
