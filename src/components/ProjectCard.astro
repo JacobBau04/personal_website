@@ -1,0 +1,28 @@
+---
+import { type CollectionEntry } from 'astro:content';
+import CustomImage from './CustomImage.astro';
+
+type Props = { project: CollectionEntry<'projects'>; class?: string; headingLevel?: 'h2' | 'h3' };
+
+const { project, class: className, headingLevel = 'h2' } = Astro.props;
+const { title, description, image } = project.data;
+const TitleTag = headingLevel;
+---
+
+<a class:list={['group flex flex-col gap-3', className]} href={`/projects/${project.id}/`}>
+    {image?.src && (
+        <CustomImage
+            class="bg-muted aspect-video w-full object-cover"
+            src={image.src}
+            alt={image.alt ?? ''}
+            widths={[400, 800]}
+            sizes="(min-width: 832px) 368px, calc(100vw - 32px)"
+        />
+    )}
+    <div>
+        <TitleTag class="font-serif text-xl leading-tight font-medium group-hover:underline group-hover:decoration-dashed group-hover:decoration-1 group-hover:underline-offset-4 sm:text-2xl">
+            {title}
+        </TitleTag>
+        {description && <div class="mt-1 text-sm leading-normal">{description}</div>}
+    </div>
+</a>
