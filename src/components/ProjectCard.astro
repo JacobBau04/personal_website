@@ -5,7 +5,7 @@ import CustomImage from './CustomImage.astro';
 type Props = { project: CollectionEntry<'projects'>; class?: string; headingLevel?: 'h2' | 'h3' };
 
 const { project, class: className, headingLevel = 'h2' } = Astro.props;
-const { title, description, image } = project.data;
+const { title, description, image, draft } = project.data;
 const TitleTag = headingLevel;
 ---
 
@@ -22,6 +22,7 @@ const TitleTag = headingLevel;
     <div>
         <TitleTag class="font-serif text-xl leading-tight font-medium group-hover:underline group-hover:decoration-dashed group-hover:decoration-1 group-hover:underline-offset-4 sm:text-2xl">
             {title}
+            {draft && <span class="ml-2 align-middle font-sans text-xs tracking-wide uppercase">(draft)</span>}
         </TitleTag>
         {description && <div class="mt-1 text-sm leading-normal">{description}</div>}
     </div>

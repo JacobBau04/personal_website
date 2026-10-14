@@ -1,15 +1,15 @@
 ---
-import { type CollectionEntry, getCollection, render } from 'astro:content';
+import { type CollectionEntry, render } from 'astro:content';
 import ArrowLeft from '../../assets/icons/arrow-left.svg';
 import ArrowRight from '../../assets/icons/arrow-right.svg';
 import Figure from '../../components/Figure.astro';
 import Video from '../../components/Video.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { sortProjects } from '../../utils/data-utils';
+import { getProjects } from '../../utils/data-utils';
 
 export async function getStaticPaths() {
     // Same order as the Projects page, so previous/next follow the list
-    const projects = (await getCollection('projects')).sort(sortProjects);
+    const projects = await getProjects();
     return projects.map((project, index) => ({
         params: { id: project.id },
         props: {
@@ -27,8 +27,14 @@ type Props = {
 };
 
 const { project, prevProject, nextProject } = Astro.props;
-const { title, description, image, seo } = project.data;
+const { title, description, image, publishDate, role, team, tools, links, seo } = project.data;
 const { Content } = await render(project);
+const details = [
+    { label: 'Date', value: publishDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }) },
+    { label: 'Role', value: role },
+    { label: 'Team', value: team },
+    { label: 'Tools', value: tools.join(', ') }
+].filter((detail) => detail.value);
 const navTitleClass = 'font-serif text-xl leading-tight font-medium group-hover:underline group-hover:decoration-dashed group-hover:decoration-1 group-hover:underline-offset-4';
 ---
 
@@ -43,6 +49,26 @@ const navTitleClass = 'font-serif text-xl leading-tight font-medium group-hover:
         <header class="mb-8">
             <h1 class="font-serif text-3xl leading-tight font-medium sm:text-5xl sm:leading-tight">{title}</h1>
             {description && <p class="mt-4 text-lg leading-normal sm:text-xl">{description}</p>}
+            <dl class="border-main mt-6 grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 border-y border-dashed py-4 text-sm">
+                {details.map((detail) => (
+                    <>
+                        <dt class="font-serif italic">{detail.label}</dt>
+                        <dd>{detail.value}</dd>
+                    </>
+                ))}
+                {links.length > 0 && (
+                    <>
+                        <dt class="font-serif italic">Links</dt>
+                        <dd class="flex flex-wrap gap-x-4">
+                            {links.map((link) => (
+                                <a class="underline decoration-dashed decoration-1 underline-offset-2 hover:decoration-solid" href={link.href} target="_blank" rel="noopener noreferrer">
+                                    {link.text}
+                                </a>
+                            ))}
+                        </dd>
+                    </>
+                )}
+            </dl>
         </header>
         <div class="prose sm:prose-lg max-w-none">
             {/* Figure and Video can be used in any .mdx project file without importing them */}
