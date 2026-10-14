@@ -1,8 +1,13 @@
+import headshot from '../assets/images/headshot.jpg';
 import type { SiteConfig } from '../types';
 
 const siteConfig: SiteConfig = {
     website: 'https://jacobbauman.vercel.app',
-    // Headshot: add the image file to src/assets/images/ and import it here (see hero.image below)
+    // Headshot shown next to your name at the top of the home page
+    avatar: {
+        src: headshot,
+        alt: 'Jacob Bauman'
+    },
     title: 'Jacob Bauman',
     subtitle: 'Robotics MS student, University of Pennsylvania',
     description: 'Portfolio of Jacob Bauman, a Robotics MS student at the University of Pennsylvania.',
@@ -71,10 +76,6 @@ const siteConfig: SiteConfig = {
         // TODO: the roles, start date, and areas you are targeting
         text: ''
     },
-    subscribe: {
-        enabled: false
-    },
-    postsPerPage: 8,
     projectsPerPage: 12
 };
 
