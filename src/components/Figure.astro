@@ -20,6 +20,7 @@ const image = (await loadImage()).default;
 ---
 
 <figure>
-    <CustomImage class="w-full" src={image} alt={alt ?? caption ?? ''} widths={[480, 768, 1024, 1536]} sizes="(min-width: 832px) 768px, calc(100vw - 32px)" />
+    {/* max-width keeps small images at their real size instead of stretching them blurry */}
+    <CustomImage class="mx-auto w-full" style={`max-width: ${image.width}px`} src={image} alt={alt ?? caption ?? ''} widths={[480, 768, 1024, 1536]} sizes="(min-width: 832px) 768px, calc(100vw - 32px)" />
     {caption && <figcaption>{caption}</figcaption>}
 </figure>
