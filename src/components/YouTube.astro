@@ -1,0 +1,24 @@
+---
+type Props = {
+    /** The video ID: the part after "watch?v=" in a YouTube link */
+    id: string;
+    caption?: string;
+    /** Text for screen readers; defaults to the caption */
+    title?: string;
+};
+
+const { id, caption, title } = Astro.props;
+---
+
+<figure>
+    {/* youtube-nocookie.com is YouTube's privacy-enhanced embed: no tracking cookies until the viewer presses play */}
+    <iframe
+        class="aspect-video h-auto w-full"
+        src={`https://www.youtube-nocookie.com/embed/${id}`}
+        title={title ?? caption ?? 'YouTube video'}
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen></iframe>
+    {caption && <figcaption>{caption}</figcaption>}
+</figure>
