@@ -16,20 +16,6 @@ const seoSchema = (image: ImageFunction) =>
         pageType: z.enum(['website', 'article']).optional()
     });
 
-const blog = defineCollection({
-    loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/blog' }),
-    schema: ({ image }) =>
-        z.object({
-            title: z.string(),
-            excerpt: z.string().optional(),
-            publishDate: z.coerce.date(),
-            updatedDate: z.coerce.date().optional(),
-            isFeatured: z.boolean().default(false),
-            tags: z.array(z.string()).default([]),
-            seo: seoSchema(image).optional()
-        })
-});
-
 const pages = defineCollection({
     loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/pages' }),
     schema: ({ image }) =>
@@ -58,4 +44,4 @@ const projects = defineCollection({
         })
 });
 
-export const collections = { blog, pages, projects };
+export const collections = { pages, projects };

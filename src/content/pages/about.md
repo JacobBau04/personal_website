@@ -5,8 +5,6 @@ seo:
   description: About Jacob Bauman, a Robotics MS student at the University of Pennsylvania.
 ---
 
-<!-- TODO: add your headshot here once it is in src/assets/images/, e.g. ![Jacob Bauman](../../assets/images/headshot.jpg) -->
-
 I'm Jacob Bauman, a Robotics MS student at the University of Pennsylvania.
 
 <!-- TODO: 2-3 more sentences: what draws you to robotics and what you focus on -->
