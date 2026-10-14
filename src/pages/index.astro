@@ -1,29 +1,42 @@
 ---
-import { getCollection } from 'astro:content';
+import { marked } from 'marked';
 import Button from '../components/Button.astro';
 import Hero from '../components/Hero.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import siteConfig from '../data/site-config';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { sortItemsByDateDesc } from '../utils/data-utils';
+import { getProjects } from '../utils/data-utils';
 
-const projects = (await getCollection('projects')).sort(sortItemsByDateDesc);
-const featuredProjects = projects.filter(({ data }) => data.isFeatured);
+const projects = await getProjects();
+const sections = [
+    { heading: 'Featured Projects', projects: projects.filter(({ data }) => data.isFeatured) },
+    { heading: 'Additional Projects', projects: projects.filter(({ data }) => !data.isFeatured) }
+].filter((section) => section.projects.length > 0);
+const lookingFor = siteConfig.lookingFor;
+const sectionHeadingClass = 'mb-12 font-serif text-xl italic sm:mb-16 sm:text-2xl';
 ---
 
 <BaseLayout description={siteConfig.description}>
     <Hero {...siteConfig.hero} />
-    {featuredProjects?.length > 0 && (
-        <div class="mb-16 sm:mb-24">
-            <h2 class="mb-12 font-serif text-xl italic sm:mb-16 sm:text-2xl">Featured Projects</h2>
+    {sections.map((section) => (
+        <section class="mb-16 sm:mb-24">
+            <h2 class={sectionHeadingClass}>{section.heading}</h2>
             <div class="grid gap-x-8 gap-y-10 sm:grid-cols-2 sm:gap-y-12">
-                {featuredProjects.map((project) => (
+                {section.projects.map((project) => (
                     <ProjectCard project={project} headingLevel="h3" />
                 ))}
             </div>
-            <div class="mt-12 sm:mt-16">
-                <Button href="/projects">View All Projects</Button>
-            </div>
+        </section>
+    ))}
+    {projects.length > 0 && (
+        <div class="mb-16 sm:mb-24">
+            <Button href="/projects">View All Projects</Button>
         </div>
+    )}
+    {lookingFor?.title && (
+        <section class="border-main mb-16 border-t border-dashed pt-12 sm:mb-24 sm:pt-16">
+            <h2 class={sectionHeadingClass}>{lookingFor.title}</h2>
+            {lookingFor.text && <div class="prose sm:prose-lg max-w-none" set:html={marked.parse(lookingFor.text)} />}
+        </section>
     )}
 </BaseLayout>

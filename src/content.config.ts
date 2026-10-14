@@ -47,7 +47,13 @@ const projects = defineCollection({
             description: z.string().optional(),
             publishDate: z.coerce.date(),
             isFeatured: z.boolean().default(false),
+            // Drafts show up in the local preview (npm run dev) but not on the live site
+            draft: z.boolean().default(false),
             image: imageSchema(image).optional(),
+            role: z.string().optional(),
+            team: z.string().optional(),
+            tools: z.array(z.string()).default([]),
+            links: z.array(z.object({ text: z.string(), href: z.string() })).default([]),
             seo: seoSchema(image).optional()
         })
 });
