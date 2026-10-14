@@ -4,6 +4,7 @@ import ArrowLeft from '../../assets/icons/arrow-left.svg';
 import ArrowRight from '../../assets/icons/arrow-right.svg';
 import Figure from '../../components/Figure.astro';
 import Video from '../../components/Video.astro';
+import YouTube from '../../components/YouTube.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getProjects } from '../../utils/data-utils';
 
@@ -71,8 +72,8 @@ const navTitleClass = 'font-serif text-xl leading-tight font-medium group-hover:
             </dl>
         </header>
         <div class="prose sm:prose-lg max-w-none">
-            {/* Figure and Video can be used in any .mdx project file without importing them */}
-            <Content components={{ Figure, Video }} />
+            {/* Figure, Video and YouTube can be used in any .mdx project file without importing them */}
+            <Content components={{ Figure, Video, YouTube }} />
         </div>
     </article>
     {(prevProject || nextProject) && (
