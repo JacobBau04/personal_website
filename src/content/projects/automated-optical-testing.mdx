@@ -1,0 +1,60 @@
+---
+title: 'Automated Optical Testing (AOT)'
+description: Closed-loop Python system that automates optical characterization and focus correction at Lawrence Livermore National Laboratory.
+# Used for ordering; the details row shows the period below
+publishDate: 'Aug 01 2024'
+period: 'Summer 2024'
+isFeatured: false
+organization: 'Lawrence Livermore National Laboratory (summer internship)'
+role: 'Sole developer'
+tools: ['Python', 'Least-squares fitting', 'Zernike polynomials']
+---
+
+## Problem
+
+Diagnosing lens and mirror quality required expert, time-intensive work, driven by two bottlenecks: repeatable data collection and wave-optics-based analysis.
+
+## Overview
+
+A closed-loop Python system that automates optical characterization and focus correction by coordinating stepper-driven mirror motion, camera capture, rotated bi-Gaussian analysis, calibration, and raster scanning across the field of view.
+
+## Results
+
+- Functional system and user manual
+- The system is **still used by optical engineers** at LLNL for product testing
+- **Post-graduation full-time job offer**
+
+_Note: demo videos have been classified by Lawrence Livermore National Laboratory._
+
+{/* TODO: LLNL figures (state estimation plots, optical setup schematic, user manual, field of view visualization, prototype setup, GUI) are on hold until you confirm they are cleared for public posting */}
+
+## Subsystems
+
+### Test Setup and Actuation
+
+- A stepper-motor-driven mirror stage moves a simulated star across the camera's field of view (X/Y) for repeatable sampling
+- Built around a point source, optics, a camera, and an adjustable mirror
+
+### Camera Control and Custom Operator GUI
+
+- A camera control script sets exposure and gain, shows a live feed, and captures and saves images to a specified path
+- Simple user inputs (grid size, spacing, "best FWHM," calibration flag) with input validation to make runs repeatable
+
+### State Estimation and Image Processing
+
+- Robust rotated bi-Gaussian detection: bad-pixel filtering and ROI cropping, then a least-squares fit
+- Outputs include the centroid, standard-deviation-based spot size, and rotation angle for each image, plus optical aberration content calculated with Zernike polynomials (2D basis vectors)
+- These analysis plots, along with plots characterizing aberrations, are used by optical engineers to diagnose the quality of a lens or mirror
+
+### Calibration Routines
+
+All calibrations are automated and used to set (1) motion calibration, (2) the maximum data collection rate, and (3) the amount of data needed for accurate analysis:
+
+1. **Motor/field-of-view calibration:** maps actuator steps to PSF motion (steps per pixel)
+2. **Autocorrelation calibration:** estimates the system's time constant to set the fastest safe sampling rate without data contamination
+3. **Standard error calibration:** determines the minimum amount of data needed for an acceptable level of uncertainty
+
+### High-Level Behavior and Integration
+
+- A scanning routine moves through a grid, collects images, saves images and data, runs image and optical analysis, and generates plots
+- Integrated as about 10 modular Python scripts (the main script orchestrates calibration → centering → raster scan → outputs)

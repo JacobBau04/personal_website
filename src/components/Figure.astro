@@ -6,9 +6,11 @@ type Props = {
     src: string;
     alt?: string;
     caption?: string;
+    /** Optional display width in pixels, e.g. to keep tall photos from filling the screen */
+    width?: number;
 };
 
-const { src, alt, caption } = Astro.props;
+const { src, alt, caption, width } = Astro.props;
 
 // Images live in src/assets/projects/ so Astro can resize and compress them at build time
 const images = import.meta.glob<{ default: ImageMetadata }>('/src/assets/projects/**/*.{jpg,jpeg,png,webp,avif,gif}');
@@ -21,6 +23,6 @@ const image = (await loadImage()).default;
 
 <figure>
     {/* max-width keeps small images at their real size instead of stretching them blurry */}
-    <CustomImage class="mx-auto w-full" style={`max-width: ${image.width}px`} src={image} alt={alt ?? caption ?? ''} widths={[480, 768, 1024, 1536]} sizes="(min-width: 832px) 768px, calc(100vw - 32px)" />
+    <CustomImage class="mx-auto w-full" style={`max-width: ${Math.min(width ?? image.width, image.width)}px`} src={image} alt={alt ?? caption ?? ''} widths={[480, 768, 1024, 1536]} sizes="(min-width: 832px) 768px, calc(100vw - 32px)" />
     {caption && <figcaption>{caption}</figcaption>}
 </figure>

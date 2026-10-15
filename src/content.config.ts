@@ -36,6 +36,9 @@ const projects = defineCollection({
             // Drafts show up in the local preview (npm run dev) but not on the live site
             draft: z.boolean().default(false),
             image: imageSchema(image).optional(),
+            // Shown as the date in the details row instead of the month/year, e.g. 'Summer 2024'; '' hides the date
+            period: z.string().optional(),
+            organization: z.string().optional(),
             role: z.string().optional(),
             team: z.string().optional(),
             tools: z.array(z.string()).default([]),
