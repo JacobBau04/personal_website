@@ -2,17 +2,18 @@
 # TODO: confirm the title (taken from your content folder name)
 title: 'RoboRacer'
 description: Autonomous Tenth-Scale Race Car Competition
-# Date taken from the race video's recording date
+# Used for ordering; the details row shows the period below
 publishDate: 'Oct 09 2026'
-# Set to true to show this project in the Featured section
+period: 'Aug 2026 – Present'
 isFeatured: true
 image:
   src: '../../assets/projects/robo-racer/race-thumbnail.jpg'
   alt: The RoboRacer car during a race run
-# TODO: fill in and uncomment the lines you want shown in the details row
-# role: ''
+organization: 'University of Pennsylvania (Autonomous Car Racing, F1TENTH)'
+role: 'Control & Perception Lead'
+tools: ['ROS 2', 'SLAM', 'Particle filter', 'LQR', 'NVIDIA Jetson', '2D LiDAR']
+# TODO: fill in and uncomment if you want them in the details row
 # team: ''
-# tools: ['', '']
 # links:
 #   - text: GitHub
 #     href: 'https://github.com/...'
@@ -22,20 +23,19 @@ image:
 
 ## Overview
 
-{/* TODO: 2-3 sentences: the course or competition, the goal, and your role */}
+An autonomous tenth-scale race car built in the Autonomous Car Racing (F1TENTH) course at the University of Pennsylvania, where I am the control and perception lead.
 
 ## What I Built
 
-{/* TODO: 3-5 bullet points, e.g.
-- Implemented ... for ...
-- Tuned ...
-*/}
+- **Perception:** built a LiDAR map via SLAM; implemented particle-filter localization on the autonomous race car
+- **Control:** developing an LQR path-tracking controller; implemented pure pursuit, follow-the-gap, and PID wall following
+- **Integration:** designed the ROS 2 software architecture integrating an NVIDIA Jetson, the motor controller, and a 2D LiDAR
 
 <Figure src="robo-racer/full-racecar.png" caption="The RoboRacer car" />
 
 ## Simulation
 
-{/* TODO: what you tested in simulation and why */}
+Each controller was validated in simulation and then deployed on hardware.
 
 <Video src="/videos/robo-racer/lab5-sim.mp4" poster="/videos/robo-racer/lab5-sim.jpg" caption="Lab 5 simulation recording" />
 

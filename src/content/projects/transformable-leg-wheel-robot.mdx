@@ -1,20 +1,20 @@
 ---
 title: 'Transformable Leg-Wheel Robot'
 description: A robot that adapts its gait to the environment in real time using a reinforcement learning (RL) policy.
-# TODO: confirm the date (currently your GitHub repo's last update)
+# Used for ordering; the details row shows the period below
 publishDate: 'Jun 10 2026'
+period: 'Jan 2026 – Present'
 # Set to true to show this project in the Featured section
 isFeatured: false
 image:
   src: '../../assets/projects/transformable-leg-wheel-robot/large-step-thumbnail.jpg'
   alt: Simulated leg-wheel robot climbing a large step
-tools: ['Reinforcement learning', 'ROS 2']
+organization: 'UC Santa Barbara'
+role: 'Co-lead Robotics Researcher'
+tools: ['Reinforcement learning', 'MuJoCo', 'ROS 2']
 links:
   - text: GitHub
     href: 'https://github.com/JacobBau04/Transformable-Leg-Wheel-Robot'
-# TODO: fill in and uncomment if you want them in the details row
-# role: ''
-# team: ''
 ---
 
 <YouTube id="iqmB9wDZNF8" caption="Simulation: climbing over a large step, taller than the robot's body" />
@@ -34,9 +34,13 @@ A transformable leg-wheel robot that adapts its gait to the environment in real 
 - Developed the simulation model
 - Exported the policy to the physical robot
 
-## Results
+### Technical Details
 
-{/* TODO: check these are still current; they come from a poster made before March 2026 */}
+- Developing a **reinforcement learning policy** that adapts leg extension and wheel torques to the terrain, using a base policy with an online adaptation module
+- Built a GPU-accelerated MuJoCo simulation of the robot and terrain to train RL control policies
+- Deploying the policy on hardware, using domain randomization and system identification to close the sim-to-real gap
+
+## Results
 
 - Energy-efficient locomotion in varied environments in simulation (see videos)
 - Real-world locomotion with ROS 2

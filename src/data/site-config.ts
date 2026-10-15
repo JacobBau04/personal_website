@@ -59,7 +59,7 @@ const siteConfig: SiteConfig = {
     ],
     hero: {
         // TODO: 2-3 sentences on your focus areas (written in Markdown; **bold** works)
-        text: "I'm **Jacob Bauman**, a Robotics MS student at the University of Pennsylvania.",
+        text: "I'm **Jacob Bauman**, a Robotics MS student at the University of Pennsylvania, specializing in machine learning and AI.",
         actions: [
             {
                 text: 'View Projects',

@@ -1,14 +1,15 @@
 ---
 title: 'Tabletop Swarm Robots'
 description: Three autonomous robots coordinate to pick up plates and transport them to a target location.
-# From the poster: UCSB ME153, Spring 2025 (TODO: adjust the month if needed)
+# Used for ordering; the details row shows the period below
 publishDate: 'Jun 01 2025'
+period: 'March 2025 – Oct 2025'
 # Set to true to show this project in the Featured section
 isFeatured: false
 image:
   src: '../../assets/projects/tabletop-swarm/carrying-plate.jpg'
   alt: Swarm robots carrying a plate together
-role: 'Project management, multi-agent pathfinding, control system, and robot behavior'
+role: 'Project Manager; multi-agent pathfinding, control system, and robot behavior'
 team: '4 students, junior design project at UC Santa Barbara (ME153)'
 tools: ['A* pathfinding', 'OpenCV ArUco markers', 'ESP32-C3']
 links:
@@ -53,6 +54,8 @@ The goals were to:
 2. Send the control signals over Wi-Fi
 3. Actuate the motors after receiving the reference signal
 4. Combine 1, 2, and 3 to pick up and transport plates cooperatively
+
+I also implemented real-time, multi-agent plate stabilization, crash detection, and autonomous evasive maneuvers.
 
 <YouTube id="HU8WUS4gp2w" caption="Swarm robot behavior: plate lifting" />
 
