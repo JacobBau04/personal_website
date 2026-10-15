@@ -39,7 +39,7 @@ I'm Jacob Bauman, a Robotics MS student at the University of Pennsylvania, speci
 
 Lawrence Livermore National Laboratory, Adaptive Optics Group · June 2025 – Sept 2025 · San Francisco Bay Area, CA
 
-- Designed and deployed an [automated laser alignment system](/projects/automated-laser-alignment/) on an operational research telescope
+- Designed and deployed an automated laser alignment system on an operational research telescope
 
 ### Mechanical Engineering Intern
 

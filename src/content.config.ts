@@ -35,6 +35,8 @@ const projects = defineCollection({
             isFeatured: z.boolean().default(false),
             // Drafts show up in the local preview (npm run dev) but not on the live site
             draft: z.boolean().default(false),
+            // Unlisted pages are live at their URL but hidden from all project lists and search engines
+            unlisted: z.boolean().default(false),
             image: imageSchema(image).optional(),
             // Shown as the date in the details row instead of the month/year, e.g. 'Summer 2024'; '' hides the date
             period: z.string().optional(),

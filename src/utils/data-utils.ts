@@ -9,8 +9,9 @@ export function sortProjects(projectA: CollectionEntry<'projects'>, projectB: Co
     return Number(projectB.data.isFeatured) - Number(projectA.data.isFeatured) || sortItemsByDateDesc(projectA, projectB);
 }
 
-// All projects in display order; drafts are only included in the local dev server
-export async function getProjects() {
-    const projects = await getCollection('projects', ({ data }) => import.meta.env.DEV || !data.draft);
+// Projects in display order; drafts are only included in the local dev server.
+// Unlisted projects are left out unless includeUnlisted is true (used to build their pages).
+export async function getProjects({ includeUnlisted = false } = {}) {
+    const projects = await getCollection('projects', ({ data }) => (import.meta.env.DEV || !data.draft) && (includeUnlisted || !data.unlisted));
     return projects.sort(sortProjects);
 }
