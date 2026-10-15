@@ -1,0 +1,96 @@
+---
+title: 'Tabletop Swarm Robots'
+description: Three autonomous robots coordinate to pick up plates and transport them to a target location.
+# From the poster: UCSB ME153, Spring 2025 (TODO: adjust the month if needed)
+publishDate: 'Jun 01 2025'
+# Set to true to show this project in the Featured section
+isFeatured: false
+image:
+  src: '../../assets/projects/tabletop-swarm/carrying-plate.jpg'
+  alt: Swarm robots carrying a plate together
+role: 'Project management, multi-agent pathfinding, control system, and robot behavior'
+team: '4 students, junior design project at UC Santa Barbara (ME153)'
+tools: ['A* pathfinding', 'OpenCV ArUco markers', 'ESP32-C3']
+links:
+  - text: Project poster (PDF)
+    href: '/files/tabletop-swarm-poster.pdf'
+---
+
+<Video src="/videos/tabletop-swarm/full-system-run.mp4" poster="/videos/tabletop-swarm/full-system-run.jpg" caption="The full system running from start to finish (sped up)" />
+
+## Overview
+
+Setting and clearing a family table can be unsanitary and repetitive. The Robotic Autonomous Table Swarm (RATS) uses swarm robotics strategies to automate this task: three autonomous robots coordinate to pick up plates and transport them to a target location.
+
+<Figure src="tabletop-swarm/four-steps.jpg" caption="Using an overhead camera, the robots (1) start in any position, (2) navigate to equidistant points around the plate, (3) lift the plate, and (4) carry it to a target position" />
+
+## Results
+
+- Functional system
+- **Best-in-class project out of 23 teams**
+
+## My Contributions
+
+### Multi-Agent Pathfinding
+
+**My role:** sole contributor
+
+Finding the fastest route from a starting position to an end position without colliding with other robots or plates. A control system then executes this path.
+
+The A\* pathfinding algorithm treats other robots as dynamic obstacles, checking new potential routes against the other robots' paths in space and time. It also minimizes a cost function for each path, with different weights on translational and rotational motion.
+
+<Figure src="tabletop-swarm/pathfinding-grid.jpg" caption="Converting a camera image into valid robot paths" />
+
+<YouTube id="6OVJ4qd4FcM" caption="Multi-agent pathfinding" />
+
+### Control System and Higher-Level Robot Behavior
+
+**My role:** wrote all of the low-level firmware, the control system, and 80% of the high-level routine
+
+The goals were to:
+
+1. Actuate the motors
+2. Compute control signals to get the robots to a reference position and orientation
+3. Combine 1 and 2 to pick up and transport plates cooperatively
+
+<YouTube id="HU8WUS4gp2w" caption="Swarm robot behavior: plate lifting" />
+
+### Project Management
+
+- Refining project requirements
+- Creating the project timeline
+- Assigning tasks
+- Systems-level understanding of the project
+
+### Technical Presentation
+
+- Presented the project overview and the pathfinding, control, and behavior subsystems
+- The project won the best-in-class award among 23 teams
+
+## System Design
+
+An overhead camera detects the ArUco tags on the robots and plates. A laptop converts the image into a grid map, runs the multi-robot pathfinding algorithm, and converts each path into reference poses. A proportional controller computes motor commands, which are sent over Wi-Fi to an ESP32-C3 microcontroller on each robot.
+
+**Live object avoidance:** pathfinding avoids obstacles in theory, but real-world dynamics can cause collisions with plates or other robots. Before each command is sent, the laptop runs a collision prediction model; if a risk is detected, evasive routines are sent to each robot.
+
+<Figure src="tabletop-swarm/system-flowchart.jpg" caption="System flowchart: how information is passed and processed during operation" />
+
+## Robot Design
+
+The biggest design challenge was fitting all three robots' ramps underneath the plate during lifting. To solve this, the design was compacted, minimizing the distance from the turntable to the ramp and lowering the overall robot height.
+
+<Figure src="tabletop-swarm/cad-assembly.jpg" caption="Robot CAD assembly (enclosure hidden)" />
+
+<Figure src="tabletop-swarm/cad-exploded.jpg" caption="Robot CAD exploded view" />
+
+| Testing & modeling   | Target | Model | Actual | Factor of safety |
+| -------------------- | -----: | ----: | -----: | ---------------: |
+| Robot weight (g)     |    367 |   279 |    279 |              N/A |
+| Plate weight (g)     |    300 |   228 |    116 |             1.96 |
+| Motor strength (kg·cm) |   1.06 | 0.268 |      2 |             7.46 |
+
+## Future Work
+
+- Replace ArUco tag detection with machine vision, eliminating the tag mounts and plate tags
+- Upgrade to an omni-wheel drivetrain with stronger motors, to move the plate more freely and lift heavier ceramic plates
+- Move the software onto ROS 2 to make the system more robust
