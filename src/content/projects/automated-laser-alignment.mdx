@@ -1,12 +1,16 @@
 ---
 title: 'Automated Laser Alignment'
-description: Automated system that measures and corrects large guide-star laser misalignments at Lawrence Livermore National Laboratory.
+description: Automated system that measures and corrects large guide-star laser misalignments on an operational research telescope at Lawrence Livermore National Laboratory.
 # Used for ordering; the details row shows the period below
-publishDate: 'Aug 01 2025'
-period: 'Summer 2025'
+publishDate: 'Sep 01 2025'
+period: 'June 2025 – Sept 2025'
 isFeatured: false
-organization: 'Lawrence Livermore National Laboratory (summer internship)'
-role: 'Sole developer'
+image:
+  src: '../../assets/projects/automated-laser-alignment/bench-setup.jpg'
+  alt: Optical bench with the camera, flip lens, mirrors, and laser source labeled
+organization: 'Lawrence Livermore National Laboratory, Adaptive Optics Group'
+role: 'Controls & Software Engineering Intern (sole developer)'
+tools: ['Closed-loop control', 'State estimation', 'Wave optics', 'Simulation']
 ---
 
 ## Problem
@@ -15,12 +19,22 @@ Manual guide-star laser beam alignment required expert, hands-on tuning, and oft
 
 ## Overview
 
-Built an automated system that can measure and correct large misalignments, inferring the system's state using non-standard methods based on wave optics theory.
+Built an automated system that can measure and correct large misalignments, and deployed it on an operational research telescope.
 
-{/* TODO: LLNL figures (annotated bench setup, pointing/centering images, alignment error plot) are on hold until you confirm they are cleared for public posting */}
+<Figure src="automated-laser-alignment/bench-setup.jpg" caption="The alignment setup: camera, flip lens, state estimation and correction mirrors, and laser source" />
+
+## What I Built
+
+- Designed and deployed an **automated laser alignment system** on an operational research telescope
+- Built a control pipeline with a proportional **closed-loop controller** and a **self-calibrating** control matrix
+- **Designed and validated state estimation algorithms** using **custom simulation**, and benchmarked them against statistically ideal performance
+- Inferred the system's state using non-standard methods based on wave optics theory
+
+<Figure src="automated-laser-alignment/pointing-centering.jpg" caption="Inferring pointing and centering states from camera images, with and without alignment error" />
 
 ## Results
 
 - Functional system and user manual
 - The system is **still used by engineers** at LLNL for remote alignment
-- Alignment error converges to zero
+
+<Figure src="automated-laser-alignment/alignment-error.jpg" caption="Alignment error converging to zero" />

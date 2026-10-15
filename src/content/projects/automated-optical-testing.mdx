@@ -2,12 +2,15 @@
 title: 'Automated Optical Testing (AOT)'
 description: Closed-loop Python system that automates optical characterization and focus correction at Lawrence Livermore National Laboratory.
 # Used for ordering; the details row shows the period below
-publishDate: 'Aug 01 2024'
-period: 'Summer 2024'
+publishDate: 'Jun 01 2025'
+period: 'June 2024 – June 2025'
 isFeatured: false
-organization: 'Lawrence Livermore National Laboratory (summer internship)'
-role: 'Sole developer'
-tools: ['Python', 'Least-squares fitting', 'Zernike polynomials']
+image:
+  src: '../../assets/projects/automated-optical-testing/field-of-view.jpg'
+  alt: Grid of fitted star images across the camera's field of view
+organization: 'Lawrence Livermore National Laboratory, Space Program'
+role: 'Mechanical Engineering Intern (sole developer)'
+tools: ['Python', 'Image processing', 'Fourier analysis', 'Least-squares fitting', 'Zernike polynomials']
 ---
 
 ## Problem
@@ -16,17 +19,18 @@ Diagnosing lens and mirror quality required expert, time-intensive work, driven 
 
 ## Overview
 
-A closed-loop Python system that automates optical characterization and focus correction by coordinating stepper-driven mirror motion, camera capture, rotated bi-Gaussian analysis, calibration, and raster scanning across the field of view.
+A closed-loop Python system that automates optical characterization and focus correction by coordinating stepper-driven mirror motion, camera capture, rotated bi-Gaussian analysis, calibration, and raster scanning across the field of view. It characterizes optical errors using signal and image processing, Fourier analysis, and statistical error analysis.
+
+<Figure src="automated-optical-testing/overview.jpg" caption="(1) State estimation plots, (2) simplified optical setup schematic, (3) user manual, (4) field of view visualization" />
 
 ## Results
 
+- **Increased image acquisition speed by 100×** and **improved precision ~40×** (to 1 pixel, 2.4 µm) over previous methods by automating the image data collection system
 - Functional system and user manual
 - The system is **still used by optical engineers** at LLNL for product testing
 - **Post-graduation full-time job offer**
 
 _Note: demo videos have been classified by Lawrence Livermore National Laboratory._
-
-{/* TODO: LLNL figures (state estimation plots, optical setup schematic, user manual, field of view visualization, prototype setup, GUI) are on hold until you confirm they are cleared for public posting */}
 
 ## Subsystems
 
@@ -35,16 +39,23 @@ _Note: demo videos have been classified by Lawrence Livermore National Laborator
 - A stepper-motor-driven mirror stage moves a simulated star across the camera's field of view (X/Y) for repeatable sampling
 - Built around a point source, optics, a camera, and an adjustable mirror
 
+<Figure src="automated-optical-testing/prototype-setup.jpg" caption="Early prototype setup. The final setup is classified by Lawrence Livermore National Laboratory." width={480} />
+
 ### Camera Control and Custom Operator GUI
 
 - A camera control script sets exposure and gain, shows a live feed, and captures and saves images to a specified path
 - Simple user inputs (grid size, spacing, "best FWHM," calibration flag) with input validation to make runs repeatable
 
+<Figure src="automated-optical-testing/simulated-star.jpg" caption="A sampled simulated star" width={420} />
+
+<Figure src="automated-optical-testing/operator-gui.jpg" caption="Operator GUI: the user inputs setup parameters" />
+
 ### State Estimation and Image Processing
 
 - Robust rotated bi-Gaussian detection: bad-pixel filtering and ROI cropping, then a least-squares fit
 - Outputs include the centroid, standard-deviation-based spot size, and rotation angle for each image, plus optical aberration content calculated with Zernike polynomials (2D basis vectors)
-- These analysis plots, along with plots characterizing aberrations, are used by optical engineers to diagnose the quality of a lens or mirror
+
+<Figure src="automated-optical-testing/analysis-plots.jpg" caption="Sample analysis plots. These, along with plots characterizing aberrations, are used by optical engineers to diagnose the quality of a lens or mirror." />
 
 ### Calibration Routines
 

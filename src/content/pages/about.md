@@ -2,26 +2,57 @@
 title: About
 seo:
   title: About Jacob Bauman
-  description: About Jacob Bauman, a Robotics MS student at the University of Pennsylvania.
+  description: About Jacob Bauman, a Robotics MS student at the University of Pennsylvania specializing in machine learning and AI.
 ---
 
-I'm Jacob Bauman, a Robotics MS student at the University of Pennsylvania.
+I'm Jacob Bauman, a Robotics MS student at the University of Pennsylvania, specializing in machine learning and AI.
 
 <!-- TODO: 2-3 more sentences: what draws you to robotics and what you focus on -->
 
 ## Education
 
-- **University of Pennsylvania**: MS in Robotics <!-- TODO: expected graduation date -->
+### University of Pennsylvania
 
-<!-- TODO: undergraduate degree, school, year -->
+**Master of Science in Robotics**, expected graduation December 2027 · Philadelphia, PA
 
-## Experience
+- **Specialization:** Machine Learning and AI
+- **Current coursework:** Autonomous Car Racing (F1TENTH), Controls & Optimization for Robotics, Applied ML
+- **Planned (Spring 2027):** Robot Learning, Physical Intelligence, Learning and Control for Robotics
 
-<!-- TODO: internships, research, or jobs: role, organization, dates, one line each -->
+### University of California, Santa Barbara
 
-## Skills
+**Bachelor of Science in Mechanical Engineering with Honors**, June 2026 · GPA 3.91 · Santa Barbara, CA
 
-<!-- TODO: e.g. Languages: ... / Robotics: ... / Hardware: ... / Tools: ... -->
+- **Specialization:** Robotics and Control
+- **Relevant coursework:** Robot Design, Machine Learning, Control Theory, Mechatronics, Dynamical Systems
+
+## Research & Projects
+
+- **Co-lead Robotics Researcher**, [Transformable Leg-Wheel Robot](/projects/transformable-leg-wheel-robot/) · Jan 2026 – Present
+- **Control & Perception Lead**, [Autonomous Car Racing (F1TENTH)](/projects/robo-racer/) · Aug 2026 – Present
+- **Drone (UAV) Project Lead**, [Autonomous Vehicle Racing Capstone Project](/projects/capstone/) · Sept 2025 – June 2026
+- **Project Manager**, [Tabletop Swarm Robots](/projects/tabletop-swarm/) · March 2025 – Oct 2025
+
+## Industry Experience
+
+### Controls & Software Engineering Intern
+
+Lawrence Livermore National Laboratory, Adaptive Optics Group · June 2025 – Sept 2025 · San Francisco Bay Area, CA
+
+- Designed and deployed an [automated laser alignment system](/projects/automated-laser-alignment/) on an operational research telescope
+
+### Mechanical Engineering Intern
+
+Lawrence Livermore National Laboratory, Space Program · June 2024 – June 2025 · San Francisco Bay Area, CA
+
+- Built [automated optical testing](/projects/automated-optical-testing/): a closed-loop Python program that characterizes optical errors and automates focus correction
+
+## Technical Skills
+
+- **Controls, planning & learning:** LQR, MPC, PID, trajectory optimization, IK, multi-robot A\*, RL (PPO)
+- **Perception & state estimation:** SLAM, particle filters, EKF, sensor fusion, computer vision (OpenCV)
+- **Software:** ROS 2, Python, MATLAB, Git, Linux, JAX, MuJoCo Playground, Gazebo, RViz, Foxglove
+- **Hardware:** Jetson Orin, Pixhawk, Raspberry Pi, Arduino, motors, ESCs, quadrotors
 
 ## Contact
 
