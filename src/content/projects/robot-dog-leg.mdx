@@ -1,0 +1,40 @@
+---
+title: '3 DOF Robot Dog Leg'
+description: A 3-degree-of-freedom robot leg that can move to any point in 3D space, using a custom nonlinear solver for inverse kinematics.
+# TODO: set the real date (only used for ordering while period is '')
+publishDate: 'Jan 01 2025'
+# TODO: e.g. 'Spring 2025'; '' hides the date
+period: ''
+isFeatured: false
+image:
+  src: '../../assets/projects/robot-dog-leg/leg-photo.jpg'
+  alt: 3 DOF robot dog leg mounted on an aluminum frame
+organization: 'UC Santa Barbara (junior design project)'
+role: 'Mechanical and circuit design; custom nonlinear solver'
+tools: ['Arduino', 'Inverse kinematics', 'CAD']
+---
+
+<YouTube id="_6wqYLOAB7c" caption="Robot dog leg running" />
+
+## Overview
+
+A 3-degree-of-freedom (DOF) robot leg that can move to any point in 3D space. It uses a custom nonlinear system-of-equations solver for the inverse kinematics equations.
+
+<Figure src="robot-dog-leg/leg-photo.jpg" caption="The assembled leg" />
+
+## My Role
+
+- Mechanical and circuit design
+- Wrote a custom nonlinear system-of-equations solver (Arduino didn't have a sufficient one)
+
+<Figure src="robot-dog-leg/leg-cad.jpg" caption="CAD model of the leg" />
+
+<Figure src="robot-dog-leg/solver-code.jpg" caption="Part of the custom nonlinear solver" />
+
+## Result
+
+A functional leg. The end effector moves in a straight line, with positions found by the custom nonlinear solver.
+
+<YouTube id="PqoTz8JhySo" caption="End effector moving in a straight line, with positions found by the custom nonlinear solver" />
+
+{/* TODO: inverse kinematics solver demo video (currently on Google Drive) */}

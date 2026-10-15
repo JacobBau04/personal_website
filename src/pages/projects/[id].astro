@@ -28,10 +28,11 @@ type Props = {
 };
 
 const { project, prevProject, nextProject } = Astro.props;
-const { title, description, image, publishDate, role, team, tools, links, seo } = project.data;
+const { title, description, image, publishDate, period, organization, role, team, tools, links, seo } = project.data;
 const { Content } = await render(project);
 const details = [
-    { label: 'Date', value: publishDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }) },
+    { label: 'Date', value: period ?? publishDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }) },
+    { label: 'Organization', value: organization },
     { label: 'Role', value: role },
     { label: 'Team', value: team },
     { label: 'Tools', value: tools.join(', ') }
