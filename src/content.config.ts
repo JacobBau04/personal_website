@@ -33,6 +33,8 @@ const projects = defineCollection({
             description: z.string().optional(),
             publishDate: z.coerce.date(),
             isFeatured: z.boolean().default(false),
+            // Optional position within its section (1 = first); projects without it follow, newest first
+            order: z.number().optional(),
             // Drafts show up in the local preview (npm run dev) but not on the live site
             draft: z.boolean().default(false),
             // Unlisted pages are live at their URL but hidden from all project lists and search engines
