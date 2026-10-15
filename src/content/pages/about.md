@@ -35,6 +35,14 @@ I'm Jacob Bauman, a Robotics MS student at the University of Pennsylvania, speci
 
 ## Industry Experience
 
+### Controls Engineering Intern
+
+Lawrence Livermore National Laboratory, Adaptive Optics Group · June 2026 – Aug 2026 · San Francisco Bay Area, CA
+
+- Developed and deployed a closed-loop star-tracking control system for a research telescope, holding pointing accuracy within ±0.002° over a full night (**in active use** by researchers)
+- Built a camera-based perception pipeline to detect and identify stars in real time at 20 Hz, integrated with the telescope mount and actuators
+- Developed a simulator that generates synthetic star-field images to tune and validate the detection algorithm, improving the detection rate by 41% across environmental conditions
+
 ### Controls & Software Engineering Intern
 
 Lawrence Livermore National Laboratory, Adaptive Optics Group · June 2025 – Sept 2025 · San Francisco Bay Area, CA
