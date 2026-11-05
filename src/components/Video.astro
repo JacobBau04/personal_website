@@ -5,12 +5,14 @@ type Props = {
     caption?: string;
     /** Optional still image shown before the video plays, e.g. "/videos/my-project/demo.jpg" */
     poster?: string;
+    /** Optional display width in pixels, e.g. to keep vertical phone videos from filling the screen */
+    width?: number;
 };
 
-const { src, caption, poster } = Astro.props;
+const { src, caption, poster, width } = Astro.props;
 ---
 
 <figure>
-    <video class="w-full" src={src} poster={poster} controls playsinline preload="metadata"></video>
+    <video class="mx-auto w-full" style={width ? `max-width: ${width}px` : undefined} src={src} poster={poster} controls playsinline preload="metadata"></video>
     {caption && <figcaption>{caption}</figcaption>}
 </figure>
