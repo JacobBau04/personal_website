@@ -92,6 +92,19 @@ html.dark {
         @apply font-medium;
     }
 
+    /* Fold-out "more detail" sections in project pages */
+    .prose details {
+        @apply border-main my-6 border-y border-dashed py-3;
+    }
+
+    .prose summary {
+        @apply cursor-pointer font-serif text-[1.125em] font-medium;
+    }
+
+    .prose details[open] summary {
+        @apply mb-2;
+    }
+
     .prose blockquote {
         @apply border-none pl-0 font-serif text-[1.375em] leading-snug font-normal italic sm:text-[1.66667em];
     }

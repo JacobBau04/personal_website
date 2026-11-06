@@ -10,41 +10,160 @@ image:
   src: '../../assets/projects/robo-racer/race-thumbnail.jpg'
   alt: The RoboRacer car during a race run
 organization: 'University of Pennsylvania (Autonomous Car Racing, F1TENTH)'
-role: 'Control & Perception Lead'
-tools: ['ROS 2', 'SLAM', 'Particle filter', 'LQR', 'NVIDIA Jetson', '2D LiDAR']
-# TODO: fill in and uncomment if you want them in the details row
-# team: ''
+role: 'Control, Perception & Planning Lead'
+tools: ['ROS 2', 'Python', 'Model predictive control (MPC)', 'Particle filter', 'SLAM', 'NVIDIA Jetson', '2D LiDAR']
+# TODO: uncomment once the code is on GitHub
 # links:
-#   - text: GitHub
+#   - text: Code and tuning log (GitHub)
 #     href: 'https://github.com/...'
 ---
 
-<Video src="/videos/robo-racer/race-2.mp4" poster="/videos/robo-racer/race-2.jpg" caption="Race 2" width={400} />
+<Video src="/videos/robo-racer/race-2.mp4" poster="/videos/robo-racer/race-2.jpg" caption="Race 2 on the real car. The suitcases are obstacles." width={400} />
 
 <Video src="/videos/robo-racer/race-2-obstacles-sim.mp4" poster="/videos/robo-racer/race-2-obstacles-sim.jpg" caption="Race 2 simulation: obstacle detection and avoidance" />
 
-<Video src="/videos/robo-racer/race-2-mpc-sim.mp4" poster="/videos/robo-racer/race-2-mpc-sim.jpg" caption="Race 2 simulation: MPC controller with dynamic bicycle model" />
+<Video src="/videos/robo-racer/race-2-mpc-sim.mp4" poster="/videos/robo-racer/race-2-mpc-sim.jpg" caption="Race 2 simulation: MPC controller with dynamic bicycle model (real time, not sped up)" />
 
-<Video src="/videos/robo-racer/race-1.mp4" poster="/videos/robo-racer/race-1.jpg" caption="Race 1" />
+<div class="not-prose border-main my-10 grid grid-cols-2 gap-6 border-y border-dashed py-6 sm:grid-cols-4">
+    <div>
+        <p class="font-serif text-3xl">4th of 14</p>
+        <p class="mt-1 text-sm">teams in the obstacle race</p>
+    </div>
+    <div>
+        <p class="font-serif text-3xl">4.2 cm</p>
+        <p class="mt-1 text-sm">average distance from the race line on the real car (was 21.6 cm)</p>
+    </div>
+    <div>
+        <p class="font-serif text-3xl">11 laps</p>
+        <p class="mt-1 text-sm">in a row with obstacles and no human takeover</p>
+    </div>
+    <div>
+        <p class="font-serif text-3xl">8.31 s</p>
+        <p class="mt-1 text-sm">best simulator lap (was 18.76 s)</p>
+    </div>
+</div>
 
 ## Overview
 
-An autonomous tenth-scale race car built in the Autonomous Car Racing (F1TENTH) course at the University of Pennsylvania, where I am the control and perception lead.
+An autonomous 1/10-scale race car built in the Autonomous Car Racing (F1TENTH) course at the University of Pennsylvania. In Race 2, obstacles were moved around the track every lap and teams were ranked by average lap time. We finished **4th of 14 teams**.
 
-## What I Built
+**My role:** control, perception, and planning lead. I wrote the race-day software (the MPC controller, race line generator, localization setup, and the testing and analysis tools) and did the tuning during the race. Teammates did the motor controller's initial calibration, which I then tuned further, and wrote the first version of the obstacle avoidance, which I reworked heavily for the real car.
 
-- **Perception:** built a LiDAR map via SLAM; implemented particle-filter localization on the autonomous race car
-- **Control:** developing an LQR path-tracking controller; implemented pure pursuit, follow-the-gap, and PID wall following
-- **Integration:** designed the ROS 2 software architecture integrating an NVIDIA Jetson, the motor controller, and a 2D LiDAR
+<Figure src="robo-racer/full-racecar.png" caption="The car: NVIDIA Jetson Orin Nano computer, SICK 2D LiDAR, and VESC motor controller" />
 
-<Figure src="robo-racer/full-racecar.png" caption="The RoboRacer car" />
+## How It Works
+
+<div class="not-prose my-8 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+    <div class="border-main rounded-sm border border-dashed p-3">
+        <p class="font-medium">1. LiDAR</p>
+        <p class="mt-1">Scans the track 15 times a second</p>
+    </div>
+    <div class="border-main rounded-sm border border-dashed p-3">
+        <p class="font-medium">2. Particle filter</p>
+        <p class="mt-1">Works out where the car is on the map</p>
+    </div>
+    <div class="border-main rounded-sm border border-dashed p-3">
+        <p class="font-medium">3. Obstacle detection</p>
+        <p class="mt-1">Finds objects on the track that aren't walls</p>
+    </div>
+    <div class="border-main rounded-sm border border-dashed p-3">
+        <p class="font-medium">4. Planner</p>
+        <p class="mt-1">Plans a detour around each obstacle and joins it to the race line</p>
+    </div>
+    <div class="border-main rounded-sm border border-dashed p-3">
+        <p class="font-medium">5. MPC</p>
+        <p class="mt-1">Picks steering and speed about 38 times a second</p>
+    </div>
+    <div class="border-main rounded-sm border border-dashed p-3">
+        <p class="font-medium">6. Motor controller</p>
+        <p class="mt-1">Drives the motor and steering servo</p>
+    </div>
+</div>
+
+The car follows a **race line** computed ahead of time from the track map: the path with the gentlest corners, with a speed plan limited by the tires' grip, the car's acceleration, and a safe distance from the walls.
+
+The **MPC** (model predictive control) predicts the car's motion 0.8 s ahead and picks the steering and speed that keep it closest to the race line.
+
+<Figure src="robo-racer/race-line-speed.png" caption="The race-day race line. It slows to about 1.7 m/s for the hairpins and reaches 3.3 m/s on the straights." width={640} />
+
+## Getting the Real Car to Follow the Line
+
+The day before the race, the motor controller died and had to be replaced. With the new one, the car cut inside every corner and hit walls. On race morning I fixed it one measured cause at a time, recording every run so each fix had a before and after:
+
+- **Steering calibration:** the new motor controller's settings turned the wheels 25% further than commanded.
+- **Tracking the wrong point:** localization reports the LiDAR's position, 0.27 m ahead of the rear axle, but the MPC's model assumes the rear axle. Holding the LiDAR on the line makes the car cut inside. I confirmed this in a simulation of the real controller before changing the car.
+- **Delay:** the car responds about 0.2 s after a command, so the MPC now plans from where the car will be when the command takes effect.
+- **Controller tuning:** lower steering penalties and a finer prediction step (0.1 s → 0.05 s) stopped the car from turning in early.
+
+<Figure src="robo-racer/paths-before-after.png" caption="The same track before and after the fixes" />
+
+<Figure src="robo-racer/rear-axle-vs-lidar.png" caption="Why tracking the LiDAR cut corners (schematic): the controller held the LiDAR point on the race line, so the rear axle traced a tighter circle inside it" width={560} />
+
+<Figure src="robo-racer/tracking-progress.png" caption="How much each fix helped, in the order they went in" />
+
+<details>
+<summary>Other fixes on the car</summary>
+
+- **Motor controller replacement:** the old one stopped showing up over USB. I ruled out the port, cable, computer, and software one at a time before replacing it.
+- **Car driving backwards:** the new motor spun the other way. Two quick fixes had hidden this in different places, so the MPC drove the car backwards. I fixed it once, at the source.
+- **Motor tuning:** fixed a speed controller gain that was 130× too low, overshoot from integral windup, and launches that stalled during motor startup.
+- **Localization speed:** a math library was spinning 5 idle threads at 100% CPU. Limiting it to one thread raised the particle filter from 16.7 to 27.7 updates per second and halved the MPC's solve time.
+
+</details>
+
+<details>
+<summary>Measuring the car's real limits</summary>
+
+Instead of guessing the car's limits, I measured them:
+
+- **Grip:** about 0.40 (friction coefficient), from how much the car actually turned compared with how much it was asked to.
+- **Steering:** the wheels reach about 0.89× the commanded angle, measured by driving slow circles and measuring their size.
+- **Acceleration:** capped at 3.2 m/s² by the motor controller's settings, not by the motor.
+- **Top speed:** at least 5.15 m/s (the hallway ran out first).
+
+The race data first suggested the steering hit a hard limit at 0.32 rad. The slow-circle test showed the wheels reach about 0.34 rad, so the real cause was the tires sliding at race speed.
+
+<Figure src="robo-racer/steering-circle-test.png" caption="Slow-circle steering test: commanded steering against the real wheel angle" width={480} />
+
+</details>
+
+## Obstacle Avoidance
+
+Teammates wrote the first version. I reworked it in simulation, then deployed and tuned it on the real car:
+
+- **Detection:** LiDAR points inside the track and away from the walls are grouped into obstacle boxes, confirmed after two scans.
+- **Planning:** the planner tries smooth swerves around each box and checks each one against the obstacle, the walls, and the car's steering limit. It picks the fastest, falls back to tighter and slower plans when the gap is small, and stops only as a last resort.
+
+<Figure src="robo-racer/avoidance-lap.png" caption="One lap on the real car: it leaves the race line to pass each obstacle, then rejoins it" width={640} />
+
+Fixes on the real car:
+
+- Detection published nothing because coordinate updates were starved. I found the cause by replaying recorded data offline, and the fix took it from 0 to 14.6 detections a second.
+- Obstacle boxes grew until they blocked the track.
+- Walls were seen as obstacles where the map was 0.2 m off.
+- The car could stop and never restart. Now, after a second stopped, it forgets every box, rescans, and replans.
+
+<Figure src="robo-racer/obstacle-laps.png" caption="Six laps from practice runs right before the race" />
 
 ## Simulation
 
-Each controller was validated in simulation and then deployed on hardware.
+Before moving to the real car, I developed the MPC in simulation. The best lap went from 18.76 s to 8.31 s, only 0.15 s slower than the race line's ideal lap. Three changes mattered most:
+
+- **Tire slip in the MPC's model:** the simple model assumes the tires never slide, so when the race line asked for harder cornering, the car ran wide out of corners and hit walls.
+- **Weight transfer:** braking shifts weight onto the front tires and makes the car turn in harder. Adding this to the model cut tracking error by about 40%.
+- **Speed command timing:** the controller reads the car's speed, then spends about 25 ms solving, so about a third of the planned braking was lost. Predicting the speed at the moment the command lands took the lap from 9.24 s to 8.31 s.
+
+<Figure src="robo-racer/sim-lap-times.png" caption="Simulator lap time after each change" />
+## Race 1 and Earlier Labs
+
+Earlier in the course I built the LiDAR map with SLAM, implemented particle-filter localization, and wrote pure pursuit, follow-the-gap, and PID wall-following controllers.
+
+<Video src="/videos/robo-racer/race-1.mp4" poster="/videos/robo-racer/race-1.jpg" caption="Race 1" />
 
 <Video src="/videos/robo-racer/lab5-sim.mp4" poster="/videos/robo-racer/lab5-sim.jpg" caption="Race 1 simulation recording" />
 
-## Results
+## What I Learned
 
-{/* TODO: measurable outcomes (lap times, speeds, placement) */}
+- **Measure the hardware before tuning the software.** The biggest gains came from calibration facts: steering gain, which point the pose describes, the real delay, and the real wheelbase.
+- **Fix the cause once, at the source.** Two quick fixes hid a reversed motor and made the problem harder to find.
+- **Test risky fixes offline first.** Replaying recorded data and simulating the real controller found and checked fixes without risking the car on race day.
