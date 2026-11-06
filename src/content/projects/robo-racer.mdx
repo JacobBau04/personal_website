@@ -6,6 +6,8 @@ description: Autonomous Tenth-Scale Race Car Competition
 publishDate: 'Oct 09 2026'
 period: 'Aug 2026 – Present'
 isFeatured: true
+# Position within the Featured section (1 = first)
+order: 1
 image:
   src: '../../assets/projects/robo-racer/race-thumbnail.jpg'
   alt: The RoboRacer car during a race run
@@ -134,7 +136,7 @@ Teammates wrote the first version. I reworked it in simulation, then deployed an
 - **Detection:** LiDAR points inside the track and away from the walls are grouped into obstacle boxes, confirmed after two scans.
 - **Planning:** the planner tries smooth swerves around each box and checks each one against the obstacle, the walls, and the car's steering limit. It picks the fastest, falls back to tighter and slower plans when the gap is small, and stops only as a last resort.
 
-<Figure src="robo-racer/avoidance-lap.png" caption="One lap on the real car: it leaves the race line to pass each obstacle, then rejoins it" width={640} />
+<Figure src="robo-racer/avoidance-lap.png" caption="One lap on the real car: it leaves the race line to pass each obstacle, then rejoins it. Orange segments show the path the MPC planned 0.8 s ahead, drawn every 0.5 s." width={640} />
 
 Fixes on the real car:
 
