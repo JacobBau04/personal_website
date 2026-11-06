@@ -19,3 +19,6 @@ pnpm-debug.log*
 
 # macOS-specific files
 .DS_Store
+
+# original photos and videos (large; the site uses compressed copies in src/ and public/)
+source-assets/
