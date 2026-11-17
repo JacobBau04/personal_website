@@ -4,7 +4,7 @@ flowchart TB
   RL[Race line<br/>waypoints with speeds]
   DC[Delay compensation<br/>replay recent commands to predict<br/>where the car will be when this one lands]
   RW[Reference window<br/>the stretch of race line ahead]
-  LIN[Linearise the bicycle model<br/>around that reference]
+  LIN[Linearize the bicycle model<br/>around that reference]
   QP[Solve a quadratic program<br/>cost: tracking + effort + smoothness<br/>limits: dynamics, steering, acceleration]
   FS[Apply the first step only]
   SPD[Speed command<br/>from the planned acceleration]

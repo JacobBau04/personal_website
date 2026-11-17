@@ -195,7 +195,12 @@ This section is for engineers: the whole system as it stands now, why each part 
 
 A word on **latency**: the time between when something is measured and when the car acts on it. At racing speed the car covers real distance in that time, so much of the design below is about knowing exactly how old each piece of data is.
 
-### State Estimation
+### Subsystem Deep Dives
+
+Each subsystem below has its own diagram and a closer look at how it works. **Click a subsystem's name to expand it.**
+
+<details>
+<summary>State Estimation</summary>
 
 <Diagram svg={d1} alt="State estimation. Wheel speed, IMU and steering command go through sensor prep. In the odometry frame, EKF1 (the production filter) uses wheel speed and IMU, and my shadow EKFs get the same data for comparison only. EKF1's motion between scans and the LiDAR feed the particle filter, which outputs a pose stamped at scan time, moved from the LiDAR to the rear axle. In the map frame, EKF2 fuses that pose with wheel speed and IMU, with an outlier gate and re-application of late data, and outputs the state for the MPC and the map-to-odom correction. A phase 1 assembler, drawn dashed, was replaced by EKF2 behind the same interface." caption="State estimation. Fast sensors keep a smooth local estimate, the LiDAR corrects its drift against the map, and EKF₂ merges the two. In phase 1, a simpler assembler did EKF₂'s job." />
 
@@ -214,32 +219,41 @@ The sensors are good at different things. Wheel speed and IMU arrive often and w
 
 **Phase 1 and phase 2.** In the first version, a simpler *assembler* did EKF₂'s job: it took the latest particle-filter pose and moved it forward to the present using how far EKF₁ said the car had moved since that scan. Phase 2 replaced it with EKF₂ behind the same interface, so the controller didn't change. EKF₁ stayed as it was and still feeds the particle filter.
 
-### Control
+</details>
 
-<Diagram svg={d2} alt="One MPC cycle. The state from EKF2 (rear-axle pose, speed, yaw rate) goes through delay compensation, which replays recent commands to predict where the car will be when the new command lands. That prediction and the race line give a reference window. The bicycle model is linearised around it, and a quadratic program is solved with a cost for tracking, effort and smoothness, and limits on dynamics, steering and acceleration. Only the first step is applied, as a speed command from the planned acceleration and a steering command. The next cycle plans again." caption="One cycle of the MPC. It plans a short way ahead, applies only the first step, and plans again from the new state." />
+<details>
+<summary>Control</summary>
+
+<Diagram svg={d2} alt="One MPC cycle. The state from EKF2 (rear-axle pose, speed, yaw rate) goes through delay compensation, which replays recent commands to predict where the car will be when the new command lands. That prediction and the race line give a reference window. The bicycle model is linearized around it, and a quadratic program is solved with a cost for tracking, effort and smoothness, and limits on dynamics, steering and acceleration. Only the first step is applied, as a speed command from the planned acceleration and a steering command. The next cycle plans again." caption="One cycle of the MPC. It plans a short way ahead, applies only the first step, and plans again from the new state." />
 
 The MPC treats the car as a *bicycle model*: one steered front wheel and one rear wheel, enough to capture how steering and speed turn into motion. Each cycle it:
 
 1. **Compensates for delay.** A command takes effect a little after it is sent. The MPC replays the commands it sent recently to predict where the car will be when this new command lands, and plans from there. On the real car, this is what stopped a weave on the straights.
 2. **Takes a reference window**: the stretch of race line ahead of the car, with its target speeds.
-3. **Linearises** the bicycle model around that reference, so the problem can be solved quickly every cycle.
-4. **Solves a quadratic program**, an optimisation problem with a single best answer that solvers find reliably. Its cost rewards staying on the reference and penalises control effort and sudden changes. Its constraints are the car's dynamics and its steering and acceleration limits.
+3. **Linearizes** the bicycle model around that reference, so the problem can be solved quickly every cycle.
+4. **Solves a quadratic program**, an optimization problem with a single best answer that solvers find reliably. Its cost rewards staying on the reference and penalizes control effort and sudden changes. Its constraints are the car's dynamics and its steering and acceleration limits.
 5. **Applies the first step only.** The planned acceleration becomes a speed command for the motor controller, and the planned steering goes to the servo. Next cycle, it plans again from the new state.
 
-**Kinematic or slip model.** The basic bicycle model is *kinematic*: it assumes the tyres roll exactly where they point. I also built a *dynamic single-track* ("slip") model, which lets the tyres slide sideways and accounts for weight shifting between the axles when the car brakes or accelerates. In the simulator at high speed the slip model is clearly better ([see Simulation](#simulation)). But it needs to know how fast the car is sliding sideways, which wheel speed and IMU cannot measure. In simulation I supplied that from a steady-state cornering model fitted to the simulator, and the slip MPC then drove on estimated state as well as it did on ground truth. The real car runs the kinematic model, which needs only what the car's own sensors can measure.
+**Kinematic or slip model.** The basic bicycle model is *kinematic*: it assumes the tires roll exactly where they point. I also built a *dynamic single-track* ("slip") model, which lets the tires slide sideways and accounts for weight shifting between the axles when the car brakes or accelerates. In the simulator at high speed the slip model is clearly better ([see Simulation](#simulation)). But it needs to know how fast the car is sliding sideways, which wheel speed and IMU cannot measure. In simulation I supplied that from a steady-state cornering model fitted to the simulator, and the slip MPC then drove on estimated state as well as it did on ground truth. The real car runs the kinematic model, which needs only what the car's own sensors can measure.
 
-### Race Line Optimisation
+</details>
 
-<Diagram svg={d3} alt="Race line optimisation. The track map built with SLAM gives track boundaries and widths. A minimum-curvature path is found with a margin from the walls. A speed profile is computed using a friction ellipse, where turning and speeding up share the grip, and limits measured on the real car for grip, acceleration and braking. These replaced the simulator's default limits. The result is waypoints with speeds, which go to the MPC." caption="The race line is computed once, offline. Its speed limits come from measurements on the real car." />
+<details>
+<summary>Race Line Optimization</summary>
+
+<Diagram svg={d3} alt="Race line optimization. The track map built with SLAM gives track boundaries and widths. A minimum-curvature path is found with a margin from the walls. A speed profile is computed using a friction ellipse, where turning and speeding up share the grip, and limits measured on the real car for grip, acceleration and braking. These replaced the simulator's default limits. The result is waypoints with speeds, which go to the MPC." caption="The race line is computed once, offline. Its speed limits come from measurements on the real car." />
 
 - **Boundaries and widths.** From the map, the line down the middle of the track and how much room there is on each side.
-- **Minimum-curvature path.** An optimiser finds the path that bends as little as possible while keeping a margin from the walls. Gentler corners let the car carry more speed.
-- **Speed profile.** The speed at each point is limited by grip, which I model as a *friction ellipse*: turning and speeding up (or braking) share the same tyre grip, so the car can't brake hard and turn hard at the same moment. The profile also respects the car's acceleration and braking limits.
+- **Minimum-curvature path.** An optimizer finds the path that bends as little as possible while keeping a margin from the walls. Gentler corners let the car carry more speed.
+- **Speed profile.** The speed at each point is limited by grip, which I model as a *friction ellipse*: turning and speeding up (or braking) share the same tire grip, so the car can't brake hard and turn hard at the same moment. The profile also respects the car's acceleration and braking limits.
 - **Waypoints with speeds** go to the MPC as its reference.
 
 The key lesson was that the limits must be the car's real ones. The simulator's defaults describe a different car, so I measured grip, acceleration and braking on the real car ([see above](#getting-the-real-car-to-follow-the-line)) and built the race line from those.
 
-### Hardware, Testing and Tuning
+</details>
+
+<details>
+<summary>Hardware, Testing and Tuning</summary>
 
 <Diagram svg={d4a} alt="The car's hardware. The SICK 2D LiDAR sends scans to the NVIDIA Jetson Orin Nano, which runs all the software. The Jetson sends speed and steering commands to the VESC motor controller. The VESC reports wheel speed and IMU back, sets the brushless motor's current with its own speed loop, and drives the steering servo." caption="The car. The Jetson runs everything; the VESC turns a speed command into motor current with its own control loop." />
 
@@ -259,6 +273,8 @@ Each level had to pass before the next was switched on, so when something broke 
 
 The real-car tuning stories, from the replaced motor controller to the measured delay, are told [above](#getting-the-real-car-to-follow-the-line).
 
+</details>
+
 ### Architecture Choices and Trade-offs
 
 - **Layered estimation.** The LiDAR is accurate but slow and late; wheel speed and IMU are fast but drift. A fast local filter, a slower correction against the map, and a global filter to merge them gets the strengths of both. *Trade-off:* more parts, and more frames and timestamps to keep straight.
@@ -274,7 +290,7 @@ The real-car tuning stories, from the replaced motor controller to the measured 
 - **Measure the hardware before tuning the software.** The biggest gains came from calibration facts: steering gain, which point the pose describes, the real delay, and the real wheelbase.
 - **Fix the cause once, at the source.** Two quick fixes hid a reversed motor and made the problem harder to find.
 - **Test risky fixes offline first.** Replaying recorded data and simulating the real controller found and checked fixes without risking the car on race day.
-- **Only a closed-loop run certifies behaviour.** Replays ranked the filters' accuracy well, but missed the tuning error that made the controller chatter.
+- **Only a closed-loop run certifies behavior.** Replays ranked the filters' accuracy well, but missed the tuning error that made the controller chatter.
 - **Stamp data when it is measured.** A delay you can't see is a delay you can't compensate for.
 
 ## Team

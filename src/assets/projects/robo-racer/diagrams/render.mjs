@@ -1,7 +1,7 @@
 // Renders every .mmd in this folder to a theme-aware .svg next to it.
 // Usage (from this folder):  node render.mjs
 // Needs @mermaid-js/mermaid-cli (npx downloads it) and a local Chrome or Edge.
-// Mermaid draws with placeholder colours (mermaid-config.json); this script swaps them for the
+// Mermaid draws with placeholder colors (mermaid-config.json); this script swaps them for the
 // site's CSS variables, so the inline SVG follows the light/dark theme.
 import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
@@ -39,5 +39,5 @@ for (const file of readdirSync(here).filter((f) => f.endsWith('.mmd'))) {
     svg = svg.replace(/<style>@font-face[^<]*<\/style>/, '');
     writeFileSync(out, svg);
     const left = [...new Set(svg.match(/#[0-9a-f]{6}\b|#[0-9a-f]{3}\b|rgb\([^)]*\)|hsl\([^)]*\)/gi) ?? [])];
-    console.log(`${file} -> ${out.split(/[\/]/).pop()}${left.length ? '  (other colours left: ' + left.join(' ') + ')' : ''}`);
+    console.log(`${file} -> ${out.split(/[\/]/).pop()}${left.length ? '  (other colors left: ' + left.join(' ') + ')' : ''}`);
 }
