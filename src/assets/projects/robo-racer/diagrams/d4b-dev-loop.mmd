@@ -1,0 +1,9 @@
+%% D4b: how the software was developed and tuned
+flowchart TB
+  SIM[Simulator<br/>no estimator may read ground truth]
+  R1[Add realism one effect at a time<br/>sensor noise<br/>then timing and dropped messages<br/>then systematic errors: speed scale,<br/>IMU bias, steering offset and lag<br/>then outliers and pushes<br/>then filters told the wrong noise]
+  CMP[Compare side by side<br/>controller on ground truth<br/>original pipeline<br/>new pipeline]
+  REP[Evaluation report]
+  CAR[Real car]
+  SIM --> R1 --> CMP --> REP --> CAR
+  CAR -->|measured delays, limits,<br/>calibrations| SIM

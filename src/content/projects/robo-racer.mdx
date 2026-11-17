@@ -13,12 +13,21 @@ image:
   alt: The RoboRacer car during a race run
 organization: 'University of Pennsylvania (Autonomous Car Racing, F1TENTH)'
 role: 'Control, Perception & Planning Lead'
+team: 'With Kevin Huang'
 tools: ['ROS 2', 'Python', 'Model predictive control (MPC)', 'Particle filter', 'SLAM', 'NVIDIA Jetson', '2D LiDAR']
 # TODO: uncomment once the code is on GitHub
 # links:
 #   - text: Code and tuning log (GitHub)
 #     href: 'https://github.com/...'
 ---
+
+import Diagram from '../../components/Diagram.astro';
+import d0 from '../../assets/projects/robo-racer/diagrams/d0-system.svg?raw';
+import d1 from '../../assets/projects/robo-racer/diagrams/d1-estimation.svg?raw';
+import d2 from '../../assets/projects/robo-racer/diagrams/d2-control.svg?raw';
+import d3 from '../../assets/projects/robo-racer/diagrams/d3-raceline.svg?raw';
+import d4a from '../../assets/projects/robo-racer/diagrams/d4a-hardware.svg?raw';
+import d4b from '../../assets/projects/robo-racer/diagrams/d4b-dev-loop.svg?raw';
 
 <Video src="/videos/robo-racer/race-2.mp4" poster="/videos/robo-racer/race-2.jpg" caption="Race 2 on the real car. The suitcases are obstacles." width={400} />
 
@@ -49,7 +58,7 @@ tools: ['ROS 2', 'Python', 'Model predictive control (MPC)', 'Particle filter', 
 
 An autonomous 1/10-scale race car built in the Autonomous Car Racing (F1TENTH) course at the University of Pennsylvania. In Race 2, obstacles were moved around the track every lap and teams were ranked by average lap time. We finished **4th of 14 teams**.
 
-**My role:** control, perception, and planning lead. I wrote the race-day software (the MPC controller, race line generator, localization setup, and the testing and analysis tools) and did the tuning during the race. Teammates did the motor controller's initial calibration, which I then tuned further, and wrote the first version of the obstacle avoidance, which I reworked heavily for the real car.
+**My role:** control, perception, and planning lead. I wrote the race-day software (the MPC controller, race line generator, localization setup, and the testing and analysis tools) and did the tuning during the race. My teammate Kevin Huang did the motor controller's initial calibration, which I then tuned further, and wrote the first version of the obstacle avoidance, which I reworked heavily for the real car.
 
 <Figure src="robo-racer/full-racecar.png" caption="The car: NVIDIA Jetson Orin Nano computer, SICK 2D LiDAR, and VESC motor controller" />
 
@@ -85,6 +94,8 @@ An autonomous 1/10-scale race car built in the Autonomous Car Racing (F1TENTH) c
 The car follows a **race line** computed ahead of time from the track map: the path with the gentlest corners, with a speed plan limited by the tires' grip, the car's acceleration, and a safe distance from the walls.
 
 The **MPC** (model predictive control) predicts the car's motion 0.8 s ahead and picks the steering and speed that keep it closest to the race line.
+
+For the full architecture, with diagrams of each part, see [Under the Hood](#under-the-hood) below.
 
 <Figure src="robo-racer/race-line-speed.png" caption="The race-day race line. It slows to about 1.7 m/s for the hairpins and reaches 3.3 m/s on the straights." width={640} />
 
@@ -131,7 +142,7 @@ The race data first suggested the steering hit a hard limit at 0.32 rad. The slo
 
 ## Obstacle Avoidance
 
-Teammates wrote the first version. I reworked it in simulation, then deployed and tuned it on the real car:
+Kevin Huang wrote the first version. I reworked it in simulation, then deployed and tuned it on the real car:
 
 - **Detection:** LiDAR points inside the track and away from the walls are grouped into obstacle boxes, confirmed after two scans.
 - **Planning:** the planner tries smooth swerves around each box and checks each one against the obstacle, the walls, and the car's steering limit. It picks the fastest, falls back to tighter and slower plans when the gap is small, and stops only as a last resort.
@@ -164,8 +175,108 @@ Earlier in the course I built the LiDAR map with SLAM, implemented particle-filt
 
 <Video src="/videos/robo-racer/lab5-sim.mp4" poster="/videos/robo-racer/lab5-sim.jpg" caption="Race 1 simulation recording" />
 
+## Under the Hood
+
+This section is for engineers: the whole system as it stands now, why each part is there, and what each choice trades off. On race day the particle filter fed the controller directly. After the races I rebuilt the state estimation in layers, developed it in a deliberately realistic simulator, and kept the controller's input the same so the MPC didn't have to change.
+
+<Diagram svg={d0} alt="System overview. Wheel speed, IMU and steering command go through sensor prep into EKF1. EKF1's motion between scans and the LiDAR feed the particle filter. The particle filter's pose and the prepared wheel speed and IMU feed EKF2, which gives the state to the MPC. The race line, passed through obstacle avoidance, gives the MPC its reference path. The MPC sends speed to the motor controller and steering to the servo." caption="The whole system. Sensors feed a layered estimator, which gives the MPC one state each cycle. The MPC follows the race line, or a detour around obstacles, and commands speed and steering." />
+
+### The Parts, Briefly
+
+- **Sensors.** A 2D LiDAR measures the distance to the walls in a wide sweep around the car. The motor controller reports wheel speed and has an IMU (inertial measurement unit) that measures how fast the car is turning. The car has no sensor on the steering angle itself, so the steering command stands in for it.
+- **Sensor prep.** Turns raw readings into proper units, removes known calibration errors, and writes an honest noise level onto every message, so each filter knows how much to trust it.
+- **EKF₁ (local motion).** An *extended Kalman filter* (EKF) predicts the car's motion with a model, then corrects the prediction with each measurement, weighting the two by how uncertain each one is. EKF₁ fuses wheel speed and IMU into a smooth, fast estimate of how the car is moving. Nothing in it sees the track, so its position slowly drifts.
+- **Particle filter.** Keeps many guesses ("particles") of where the car might be on the map, scores each by how well the LiDAR scan would fit the map from that spot, and keeps the likely ones. It knows where the car is on the track, but the LiDAR updates much less often than the wheel speed sensor, and each answer arrives a little late.
+- **EKF₂ (global state).** Merges the particle filter's positions with wheel speed and IMU, rejects positions that disagree too much with everything else, and handles data that arrives late. Its output is the state the controller uses.
+- **Race line.** The fastest path and speed plan around the track, computed once, ahead of time, from the map and the car's limits.
+- **Obstacle avoidance.** Finds obstacles in the LiDAR scan and plans a detour that rejoins the race line ([described above](#obstacle-avoidance)). I raced with it in Race 2.
+- **MPC.** *Model predictive control.* Many times a second, the controller predicts the car's motion over a short look-ahead, picks the steering and acceleration that follow the reference best within the car's limits, applies the first step, and then plans again.
+- **Motor controller and steering servo.** The VESC motor controller runs its own speed loop to reach the commanded speed; the servo turns the front wheels.
+
+A word on **latency**: the time between when something is measured and when the car acts on it. At racing speed the car covers real distance in that time, so much of the design below is about knowing exactly how old each piece of data is.
+
+### State Estimation
+
+<Diagram svg={d1} alt="State estimation. Wheel speed, IMU and steering command go through sensor prep. In the odometry frame, EKF1 (the production filter) uses wheel speed and IMU, and my shadow EKFs get the same data for comparison only. EKF1's motion between scans and the LiDAR feed the particle filter, which outputs a pose stamped at scan time, moved from the LiDAR to the rear axle. In the map frame, EKF2 fuses that pose with wheel speed and IMU, with an outlier gate and re-application of late data, and outputs the state for the MPC and the map-to-odom correction. A phase 1 assembler, drawn dashed, was replaced by EKF2 behind the same interface." caption="State estimation. Fast sensors keep a smooth local estimate, the LiDAR corrects its drift against the map, and EKF₂ merges the two. In phase 1, a simpler assembler did EKF₂'s job." />
+
+The sensors are good at different things. Wheel speed and IMU arrive often and with little delay, but adding up their small errors makes the position drift. The LiDAR, matched against the map, gives an absolute position, but less often and late. No single filter does both well, so I split the job into layers.
+
+**Sensor prep** is the one place where raw data becomes filter input. It converts units, subtracts the IMU's offset (learned while the car is parked), corrects the wheel speed's scale error, and keeps every original timestamp. It writes a noise level onto each message and raises it when a reading is less reliable: at very low speed, and under hard acceleration or braking. Every filter reads its sensor noise from the message, so there is exactly one place to tune it.
+
+**EKF₁** runs in the *odometry frame*, a frame that starts where the car started and drifts with it. The filter that drives the car is robot_localization, a widely used open-source EKF that I configured rather than wrote. Beside it I run my own EKFs as *shadows*: they get the same inputs, but nothing downstream uses their output, so I can compare them fairly without risking the car.
+
+- The first shadow uses a steering-aware model: the car's turning rate settles toward what its speed and steering angle predict.
+- The second also models how the speed controller turns a speed command into acceleration. For now it uses the simulator's speed controller; the real motor controller needs its own fitted model.
+
+**The particle filter** now runs once per LiDAR scan instead of once per wheel-speed message. Between scans it moves its particles by EKF₁'s motion, and it stamps each result with the time the scan was taken, not the time it finished computing. That honest stamp is what lets the next layer correct for the delay. It also moves its result from the LiDAR to the rear axle, because the LiDAR sits ahead of the axle and the rest of the system describes the car by its rear axle. While bringing it up I fixed a bug in the open-source filter: it averaged the particles' headings as plain numbers, which points the car the wrong way when the headings straddle the point where the angle wraps around.
+
+**EKF₂** runs in the *map frame*. It fuses the particle filter's poses, each placed at the time its scan was taken, with wheel speed and IMU. Each pose passes an *outlier gate*: if it is too unlikely given everything else the filter knows, it is rejected, and if poses keep being rejected the filter recovers instead of locking itself out. When a measurement arrives after newer ones have already been used, the filter rewinds, applies it in order, and replays the rest. EKF₂ publishes the correction between the map and odometry frames, and the state the MPC uses. My own shadow version of EKF₂ also estimates the IMU's slow drift as part of its state.
+
+**Phase 1 and phase 2.** In the first version, a simpler *assembler* did EKF₂'s job: it took the latest particle-filter pose and moved it forward to the present using how far EKF₁ said the car had moved since that scan. Phase 2 replaced it with EKF₂ behind the same interface, so the controller didn't change. EKF₁ stayed as it was and still feeds the particle filter.
+
+### Control
+
+<Diagram svg={d2} alt="One MPC cycle. The state from EKF2 (rear-axle pose, speed, yaw rate) goes through delay compensation, which replays recent commands to predict where the car will be when the new command lands. That prediction and the race line give a reference window. The bicycle model is linearised around it, and a quadratic program is solved with a cost for tracking, effort and smoothness, and limits on dynamics, steering and acceleration. Only the first step is applied, as a speed command from the planned acceleration and a steering command. The next cycle plans again." caption="One cycle of the MPC. It plans a short way ahead, applies only the first step, and plans again from the new state." />
+
+The MPC treats the car as a *bicycle model*: one steered front wheel and one rear wheel, enough to capture how steering and speed turn into motion. Each cycle it:
+
+1. **Compensates for delay.** A command takes effect a little after it is sent. The MPC replays the commands it sent recently to predict where the car will be when this new command lands, and plans from there. On the real car, this is what stopped a weave on the straights.
+2. **Takes a reference window**: the stretch of race line ahead of the car, with its target speeds.
+3. **Linearises** the bicycle model around that reference, so the problem can be solved quickly every cycle.
+4. **Solves a quadratic program**, an optimisation problem with a single best answer that solvers find reliably. Its cost rewards staying on the reference and penalises control effort and sudden changes. Its constraints are the car's dynamics and its steering and acceleration limits.
+5. **Applies the first step only.** The planned acceleration becomes a speed command for the motor controller, and the planned steering goes to the servo. Next cycle, it plans again from the new state.
+
+**Kinematic or slip model.** The basic bicycle model is *kinematic*: it assumes the tyres roll exactly where they point. I also built a *dynamic single-track* ("slip") model, which lets the tyres slide sideways and accounts for weight shifting between the axles when the car brakes or accelerates. In the simulator at high speed the slip model is clearly better ([see Simulation](#simulation)). But it needs to know how fast the car is sliding sideways, which wheel speed and IMU cannot measure. In simulation I supplied that from a steady-state cornering model fitted to the simulator, and the slip MPC then drove on estimated state as well as it did on ground truth. The real car runs the kinematic model, which needs only what the car's own sensors can measure.
+
+### Race Line Optimisation
+
+<Diagram svg={d3} alt="Race line optimisation. The track map built with SLAM gives track boundaries and widths. A minimum-curvature path is found with a margin from the walls. A speed profile is computed using a friction ellipse, where turning and speeding up share the grip, and limits measured on the real car for grip, acceleration and braking. These replaced the simulator's default limits. The result is waypoints with speeds, which go to the MPC." caption="The race line is computed once, offline. Its speed limits come from measurements on the real car." />
+
+- **Boundaries and widths.** From the map, the line down the middle of the track and how much room there is on each side.
+- **Minimum-curvature path.** An optimiser finds the path that bends as little as possible while keeping a margin from the walls. Gentler corners let the car carry more speed.
+- **Speed profile.** The speed at each point is limited by grip, which I model as a *friction ellipse*: turning and speeding up (or braking) share the same tyre grip, so the car can't brake hard and turn hard at the same moment. The profile also respects the car's acceleration and braking limits.
+- **Waypoints with speeds** go to the MPC as its reference.
+
+The key lesson was that the limits must be the car's real ones. The simulator's defaults describe a different car, so I measured grip, acceleration and braking on the real car ([see above](#getting-the-real-car-to-follow-the-line)) and built the race line from those.
+
+### Hardware, Testing and Tuning
+
+<Diagram svg={d4a} alt="The car's hardware. The SICK 2D LiDAR sends scans to the NVIDIA Jetson Orin Nano, which runs all the software. The Jetson sends speed and steering commands to the VESC motor controller. The VESC reports wheel speed and IMU back, sets the brushless motor's current with its own speed loop, and drives the steering servo." caption="The car. The Jetson runs everything; the VESC turns a speed command into motor current with its own control loop." />
+
+The VESC motor controller runs in speed mode: the MPC asks for a speed, and the VESC's own control loop adjusts the motor current to hold it. The VESC also reports wheel speed and the IMU, and drives the steering servo. Because the controller sends speeds rather than currents, the VESC's speed loop is part of the car's dynamics, and its tuning matters as much as the MPC's.
+
+<Diagram svg={d4b} alt="Development loop. The simulator, where no estimator may read ground truth, has realism added one effect at a time: sensor noise, then timing and dropped messages, then systematic errors (speed scale, IMU bias, steering offset and lag), then outliers and pushes, then filters told the wrong noise. Configurations are compared side by side: controller on ground truth, the original pipeline, and the new pipeline. Results go into an evaluation report, then to the real car. Measured delays, limits and calibrations from the car go back into the simulator." caption="How the software was developed: realism added one effect at a time, configurations compared side by side, and measurements from the car fed back into the simulator." />
+
+Everything was developed in a simulator first, made realistic one effect at a time:
+
+1. sensor noise;
+2. real sensor timing, delays and dropped messages;
+3. systematic errors: a wheel-speed scale error, IMU drift, and a steering offset and lag;
+4. outliers, LiDAR dropouts and sideways pushes;
+5. filters told the wrong noise levels, in both directions: too trusting of the sensors, and too trusting of the model.
+
+Each level had to pass before the next was switched on, so when something broke I knew which effect caused it. A firewall kept the results honest: an automatic test fails if any part of the estimator reads the simulator's ground truth. At each level I compared the controller on ground truth (the best case), the original race-day pipeline, and the new estimation, over several random seeds, and collected the results in an evaluation report. Measurements from the real car (its delays, limits and calibrations) then went back into the simulator and the controller.
+
+The real-car tuning stories, from the replaced motor controller to the measured delay, are told [above](#getting-the-real-car-to-follow-the-line).
+
+### Architecture Choices and Trade-offs
+
+- **Layered estimation.** The LiDAR is accurate but slow and late; wheel speed and IMU are fast but drift. A fast local filter, a slower correction against the map, and a global filter to merge them gets the strengths of both. *Trade-off:* more parts, and more frames and timestamps to keep straight.
+- **The rear axle as the one reference point.** Every position in the system describes the rear axle, and the LiDAR's offset is handled explicitly in one place. When the controller tracked the LiDAR instead, the car cut every corner. *Trade-off:* every sensor that isn't at the axle needs a conversion, and each one is a chance for a mistake.
+- **An off-the-shelf filter drives; my own filters shadow it.** The production filter is well tested, so the car is safe to drive, and my filters run on exactly the same data, so the comparison is fair. *Trade-off:* the production filter can only use the motion models it ships with, and it doesn't use the steering command at all.
+- **Latency as a first-class signal.** Every timestamp comes from when the measurement was taken, the particle filter stamps its result at scan time, estimates are moved forward to the present, and the controller compensates for its own command delay. A pose stamped when it is published hides its own delay, and nothing downstream can correct a delay it can't see. *Trade-off:* every stage has to keep recent history and cope with data arriving out of order.
+- **Process noise matters even for states no sensor measures.** The production EKF also tracks acceleration, which no sensor measures directly. When I let that estimate change too little, it lagged, the speed prediction overshot at every throttle and brake change, and the controller chattered. Replays of recorded data showed nothing wrong; only a live closed-loop run exposed it.
+- **More accurate isn't automatically better.** At one point the new estimator gave the most accurate pose of any pipeline, yet made the slip MPC chatter while the laggier pipelines drove smoothly. The cause was a missing input, the car's sideways slip, which the lag in the old pipelines happened to hide. Supplying it from a cornering model fixed the chatter.
+- **Realism one effect at a time.** When the new pipeline drove cleanly with timing effects on but chattered once systematic errors were added, switching those errors off one at a time pointed to the wheel-speed scale error. The controller turns a speed that reads high into a constant push on the throttle, so calibrating the speed scale became mandatory. *Trade-off:* a slower path to a full-realism result, but every failure had one cause.
+
 ## What I Learned
 
 - **Measure the hardware before tuning the software.** The biggest gains came from calibration facts: steering gain, which point the pose describes, the real delay, and the real wheelbase.
 - **Fix the cause once, at the source.** Two quick fixes hid a reversed motor and made the problem harder to find.
 - **Test risky fixes offline first.** Replaying recorded data and simulating the real controller found and checked fixes without risking the car on race day.
+- **Only a closed-loop run certifies behaviour.** Replays ranked the filters' accuracy well, but missed the tuning error that made the controller chatter.
+- **Stamp data when it is measured.** A delay you can't see is a delay you can't compensate for.
+
+## Team
+
+**Kevin Huang** did the initial setup and calibration of the replacement motor controller (VESC) and wrote the first version of the obstacle avoidance.

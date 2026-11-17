@@ -1,0 +1,8 @@
+%% D4a: the car's hardware and signal path
+flowchart TB
+  L[SICK 2D LiDAR] -->|scans| J[NVIDIA Jetson Orin Nano<br/>runs all the software]
+  J -->|speed command| V[VESC motor controller<br/>speed mode]
+  V -->|wheel speed, IMU| J
+  V -->|its own speed loop<br/>sets motor current| MOT[Brushless motor]
+  J -->|steering command| V
+  V -->|servo position| SV[Steering servo]

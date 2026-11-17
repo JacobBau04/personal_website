@@ -1,0 +1,29 @@
+%% D1: state estimation
+flowchart TB
+  subgraph Raw[Raw sensors]
+    direction LR
+    W[Wheel speed]
+    G[IMU]
+    S[Steering command]
+    L[2D LiDAR]
+  end
+  P[Sensor prep<br/>units, IMU offset, speed scale<br/>honest noise on every message]
+  subgraph Odom[Odometry frame: smooth and fast, but drifts]
+    E1[EKF₁, production<br/>off-the-shelf filter]
+    SH[My shadow EKFs<br/>steering-aware yaw<br/>+ speed-command model]
+  end
+  PF[Particle filter<br/>runs once per scan<br/>pose moved LiDAR to rear axle]
+  subgraph Map[Map frame: accurate, but late]
+    E2[EKF₂<br/>outlier gate<br/>re-applies late data]
+    A1[Phase 1: assembler<br/>moved the latest pose to now]
+  end
+  OUT[State for the MPC<br/>and the map-to-odom correction]
+  W & G & S --> P
+  P -->|wheel speed, IMU| E1
+  P -.->|same data, compared only| SH
+  E1 -->|motion between scans| PF
+  L --> PF
+  PF -->|pose, stamped at scan time| E2
+  P -->|wheel speed, IMU| E2
+  A1 -.->|replaced by, same interface| E2
+  E2 --> OUT

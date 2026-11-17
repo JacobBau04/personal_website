@@ -1,0 +1,8 @@
+%% D3: race line optimisation (offline)
+flowchart TB
+  MAP[Track map<br/>built with SLAM] --> B[Track boundaries<br/>and widths]
+  B --> MC[Minimum-curvature path<br/>with a margin from the walls]
+  MC --> SP[Speed profile<br/>friction ellipse: turning and<br/>speeding up share the grip]
+  LIM[Limits measured on the real car<br/>grip, acceleration, braking] --> SP
+  SIM[Simulator's default limits] -.->|replaced| LIM
+  SP --> WP[Waypoints with speeds] --> M[MPC]

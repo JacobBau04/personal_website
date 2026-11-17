@@ -1,0 +1,23 @@
+---
+type Props = {
+    /** Raw SVG text, imported in the .mdx with `?raw`, e.g. `import d0 from '.../d0-system.svg?raw'` */
+    svg: string;
+    /** What the diagram shows, for screen readers */
+    alt: string;
+    caption?: string;
+};
+
+const { svg, alt, caption } = Astro.props;
+
+// The SVG is placed inline (not as an <img>) so its colours follow the site's light/dark CSS variables.
+// It shrinks to at most three-quarters of its drawn size; below that it scrolls sideways (on a phone) so the text stays readable.
+const naturalWidth = Number(svg.match(/viewBox="[\d.]+ [\d.]+ ([\d.]+)/)?.[1] ?? 600);
+const minWidth = Math.round(naturalWidth * 0.75);
+---
+
+<figure>
+    <div class="overflow-x-auto" role="img" aria-label={alt}>
+        <div class="mx-auto [&>svg]:mx-auto [&>svg]:block [&>svg]:h-auto" style={`min-width: ${minWidth}px; max-width: ${Math.round(naturalWidth)}px`} set:html={svg} />
+    </div>
+    {caption && <figcaption>{caption}</figcaption>}
+</figure>

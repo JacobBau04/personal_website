@@ -1,0 +1,35 @@
+%% D0: the whole system, top to bottom so it fits a phone
+flowchart TB
+  subgraph Sensors
+    direction LR
+    L[2D LiDAR]
+    W[Wheel speed]
+    G[IMU]
+    S[Steering command]
+  end
+  subgraph Estimation
+    P[Sensor prep<br/>units, calibration, noise]
+    E1[EKF₁<br/>local motion]
+    PF[Particle filter<br/>LiDAR scan vs map]
+    E2[EKF₂<br/>global state]
+  end
+  subgraph Planning[Planning and control]
+    R[Race line<br/>computed offline]
+    OA[Obstacle avoidance<br/>detour planner]
+    M[MPC<br/>delay-compensated]
+  end
+  subgraph Actuation
+    direction LR
+    V[Motor controller<br/>speed loop]
+    SV[Steering servo]
+  end
+  W & G & S --> P --> E1
+  E1 -->|motion between scans| PF
+  L --> PF
+  PF -->|pose| E2
+  P -->|wheel speed, IMU| E2
+  E2 -->|state| M
+  R --> OA -->|reference path| M
+  E2 ~~~ R
+  M -->|speed| V
+  M -->|steering| SV
